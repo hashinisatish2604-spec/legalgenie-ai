@@ -3,8 +3,22 @@ from views.chatbotLegalv2 import process_input, create_new_chat, get_chat_list, 
 from views.judgmentPred import extract_text_from_file, predict_verdict
 from views.docGen import generate_legal_document
 import os
+import logging
 
 app = Flask(__name__)
+
+# Clear any existing handlers
+for handler in app.logger.handlers:
+    app.logger.removeHandler(handler)
+
+# Configure Flask logger to output INFO level to console
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.INFO)
+formatter = logging.Formatter('[%(asctime)s] %(levelname)s in %(module)s: %(message)s')
+console_handler.setFormatter(formatter)
+
+app.logger.addHandler(console_handler)
+app.logger.setLevel(logging.INFO)
 
 @app.route('/')
 def index():
@@ -49,8 +63,17 @@ def chat():
     if not user_input or not chat_name:
         return jsonify({"error": "Missing input or chat name"}), 400
 
-    response = process_input(chat_name, user_input)
-    return jsonify({"response": response})
+    # Get response and source
+    response, source_type = process_input(chat_name, user_input, return_source=True)
+
+    # Log the source explicitly
+    app.logger.info(f"⚡ Answer Source: {source_type} | Chat: {chat_name} | Input: {user_input}")
+    app.logger.info(f"Response preview: {response[:100]}")  # optional
+
+    return jsonify({
+        "response": response,
+        "source": source_type
+    })
 
 @app.route('/new_chat', methods=['POST'])
 def new_chat():

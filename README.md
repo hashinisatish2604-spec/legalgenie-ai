@@ -6,7 +6,7 @@ An AI assistant to help with legal queries, with an RAG model trained on the Ind
 - ✅ **IPC-verified Answers**: Provides context-aware responses by referencing the prompt according to the Indian Penal Code.
 - 📜 **Legal Doc Generator**: Generates legal documents from a single prompt, in a ready-to-use Word `.docx` format.
 - 🔍 **Judgment Prediction**: Uses a high-level Bi-GRU neural network model, trained on cases from 1947 to 2020, to accurately predict a court verdict.
-- 🧩 **Interactive Console**: Simple and interactive user interface powered by Streamlit for ease of use.
+- 🧩 **Interactive Console**: Simple and interactive user interface for ease of use.
 
 ## Technologies Used
 
