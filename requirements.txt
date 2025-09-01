@@ -13,6 +13,7 @@ python-dotenv==1.1.1
 python_docx==1.2.0
 ray==2.49.0
 sentence_transformers==5.1.0
-tensorflow_intel==2.16.1
+tensorflow==2.16.1
 transformers==4.56.0
 upstash_redis==1.4.0
+
