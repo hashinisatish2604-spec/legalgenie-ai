@@ -172,7 +172,3 @@ def generate_document():
 @app.route('/download/<filename>')
 def download_file(filename):
     return send_from_directory('static/generated_docs', filename, as_attachment=True)
-
-if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 5000))  # use $PORT from Render
-    app.run(host="0.0.0.0", port=port)
