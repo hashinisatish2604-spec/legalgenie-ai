@@ -1,5 +1,4 @@
 faiss_cpu==1.12.0
-faiss_cpu==1.11.0
 Flask==3.1.2
 langchain==0.3.27
 langchain_community==0.3.29
@@ -14,8 +13,6 @@ python-dotenv==1.1.1
 python_docx==1.2.0
 ray==2.49.0
 sentence_transformers==5.1.0
-sentence_transformers==4.1.0
 tensorflow_intel==2.16.1
 transformers==4.56.0
-transformers==4.52.4
 upstash_redis==1.4.0
