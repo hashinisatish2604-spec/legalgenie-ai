@@ -1,9 +1,23 @@
 from flask import Flask, render_template, request, jsonify, send_from_directory
-from views.chatbotLegalv2 import process_input, create_new_chat, get_chat_list, load_chat
-from views.judgmentPred import extract_text_from_file, predict_verdict
-from views.docGen import generate_legal_document
+try:
+    from views.chatbotLegalv2 import process_input, create_new_chat, get_chat_list, load_chat
+except Exception as e:
+    print(f"❌ Failed to import chatbotLegalv2: {e}", file=sys.stderr)
+    raise
+try:
+    from views.judgmentPred import extract_text_from_file, predict_verdict
+except Exception as e:
+    print(f"❌ Failed to import judgementPred: {e}", file=sys.stderr)
+    raise
+try:
+    from views.docGen import generate_legal_document
+except Exception as e:
+    print(f"❌ Failed to import docGen: {e}", file=sys.stderr)
+    raise
 import os
 import logging
+import sys
+print("🚀 Starting Flask app...", file=sys.stderr)
 
 app = Flask(__name__)
 
