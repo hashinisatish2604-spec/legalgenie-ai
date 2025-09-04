@@ -16,14 +16,14 @@ from transformers import AutoTokenizer, AutoModel
 
 load_dotenv()
 
-# Initialize Redis
+# ---------------- Redis Init ----------------
 redis_client = Redis(
     url=os.getenv("UPSTASH_REDIS_URL"),
     token=os.getenv("UPSTASH_REDIS_TOKEN")
 )
 
+# ---------------- Gemini Init ----------------
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
-
 GEMINI_MODEL_NAME = "gemini-2.0-flash"
 
 SYSTEM_PROMPT = """
@@ -33,19 +33,28 @@ This is an educational legal summary, not legal advice. Avoid sensational or gra
 If a specific section’s text is not available in the provided context, give a general explanation of the legal concept without inventing statutory wording.
 """
 
-# ✅ Ensure inLegalBERT is downloaded
+# ---------------- Lazy Global Vars ----------------
 MODEL_NAME = "law-ai/InLegalBERT"
 model_cache_dir = os.path.join(os.path.expanduser("~"), ".cache", "huggingface", "hub")
 
-try:
-    _ = AutoTokenizer.from_pretrained(MODEL_NAME, cache_dir=model_cache_dir)
-    _ = AutoModel.from_pretrained(MODEL_NAME, cache_dir=model_cache_dir)
-    print("✅ inLegalBERT model is available locally.")
-except Exception as e:
-    print(f"⚠️ Downloading inLegalBERT failed or incomplete: {e}")
+_embedding_model = None
+_vectorstore = None
 
-# ✅ Use inLegalBERT for embeddings
-embedding_model = HuggingFaceEmbeddings(model_name=MODEL_NAME)
+
+def get_embedding_model():
+    """Load InLegalBERT only once, when first needed."""
+    global _embedding_model
+    if _embedding_model is None:
+        try:
+            AutoTokenizer.from_pretrained(MODEL_NAME, cache_dir=model_cache_dir)
+            AutoModel.from_pretrained(MODEL_NAME, cache_dir=model_cache_dir)
+            print("✅ InLegalBERT tokenizer & model ready.")
+        except Exception as e:
+            print(f"⚠️ Failed to load InLegalBERT immediately: {e}")
+
+        _embedding_model = HuggingFaceEmbeddings(model_name=MODEL_NAME)
+    return _embedding_model
+
 
 def build_faiss_index():
     """Rebuild FAISS index from IPC JSON if index missing or broken."""
@@ -60,31 +69,32 @@ def build_faiss_index():
         text = f"{section}: {title}\n{content}"
         docs.append(Document(page_content=text, metadata={"section": section, "title": title}))
 
-    new_vectorstore = FAISS.from_documents(docs, embedding_model)
+    new_vectorstore = FAISS.from_documents(docs, get_embedding_model())
     new_vectorstore.save_local("ipc_embed_db_inlegalbert")
-    print("✅ FAISS index rebuilt successfully with inLegalBERT and laws_raw.json.")
+    print("✅ FAISS index rebuilt successfully.")
     return new_vectorstore
 
-# Try loading FAISS index, rebuild if missing or broken
-try:
-    vectorstore = FAISS.load_local("ipc_embed_db_inlegalbert", embedding_model, allow_dangerous_deserialization=True)
-    _ = vectorstore.similarity_search("test", k=1)
-    print("✅ FAISS index (inLegalBERT) loaded successfully.")
-except Exception as e:
-    print(f"❌ Error loading FAISS index: {e}")
-    vectorstore = build_faiss_index()
 
-retriever = vectorstore.as_retriever(search_type="similarity", search_kwargs={"k": 5})
+def get_vectorstore():
+    """Lazy-load FAISS vectorstore."""
+    global _vectorstore
+    if _vectorstore is None:
+        try:
+            _vectorstore = FAISS.load_local(
+                "ipc_embed_db_inlegalbert",
+                get_embedding_model(),
+                allow_dangerous_deserialization=True
+            )
+            _ = _vectorstore.similarity_search("test", k=1)
+            print("✅ FAISS index loaded successfully.")
+        except Exception as e:
+            print(f"❌ Error loading FAISS index: {e}")
+            _vectorstore = build_faiss_index()
+    return _vectorstore
+
 
 # ---------------- Hybrid Retrieval ----------------
-
 def hybrid_retrieve(query: str, k: int = 5, score_threshold: float = 0.65):
-    """
-    Hybrid retrieval with gating:
-    - If explicit section number → prefer JSON
-    - Else run FAISS, but only trust if similarity is above threshold
-    - Otherwise → GEN
-    """
     context_parts = []
     source = "GEN"
 
@@ -101,35 +111,32 @@ def hybrid_retrieve(query: str, k: int = 5, score_threshold: float = 0.65):
             source = "JSON"
 
     # 2️⃣ FAISS semantic search with gating
+    vectorstore = get_vectorstore()
     results = vectorstore.similarity_search_with_score(query, k=k)
     if results:
         top_doc, top_score = results[0]
-        # lower score = closer in FAISS, adjust if needed
         if top_score < score_threshold or any(word in query.lower() for word in ["ipc", "section", "article", "act"]):
             for doc, score in results:
                 context_parts.append(f"{doc.metadata.get('section','')} - {doc.metadata.get('title','')}\n{doc.page_content}")
             source = "RAG" if source == "GEN" else "HYBRID"
-
-            print("🔍 FAISS Retrieved:")
-            for doc, score in results:
-                print(f"   [{score:.4f}] {doc.metadata.get('section')} - {doc.metadata.get('title')}")
         else:
             print(f"⚠️ FAISS results below threshold ({top_score:.4f}), using GEN instead.")
 
-    # 3️⃣ Merge
     context = "\n\n".join(context_parts)
     return context.strip(), source
 
-# --------------- Redis Chat Helpers ---------------
 
+# ---------------- Redis Chat Helpers ----------------
 def load_chat(chat_name: str) -> dict:
     chat_data = redis_client.get(chat_name)
     if chat_data:
         return json.loads(chat_data)
     return {"generated": [], "past": [], "source": []}
 
+
 def save_chat(chat_name: str, chat_data: dict) -> None:
     redis_client.set(chat_name, json.dumps(chat_data))
+
 
 def create_new_chat() -> str:
     new_chat_name = f"Chat {len(list(redis_client.keys('*'))) + 1}"
@@ -137,11 +144,12 @@ def create_new_chat() -> str:
     save_chat(new_chat_name, chat_data)
     return new_chat_name
 
+
 def get_chat_list() -> list:
     return list(redis_client.keys('*'))
 
-# --------------- Gemini Generation ---------------
 
+# ---------------- Gemini Generation ----------------
 def _gemini_generate_once(prompt: str, temperature: float = 0.2) -> dict:
     safety_settings = [
         {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_ONLY_HIGH"},
@@ -152,8 +160,8 @@ def _gemini_generate_once(prompt: str, temperature: float = 0.2) -> dict:
     generation_config = {"temperature": temperature, "top_p": 0.9, "top_k": 40, "max_output_tokens": 800}
     model = genai.GenerativeModel(GEMINI_MODEL_NAME)
     full_prompt = f"{SYSTEM_PROMPT.strip()}\n\n{prompt.strip()}"
-    resp = model.generate_content(full_prompt, safety_settings=safety_settings, generation_config=generation_config)
-    return resp
+    return model.generate_content(full_prompt, safety_settings=safety_settings, generation_config=generation_config)
+
 
 def _extract_text(resp) -> str:
     text = getattr(resp, "text", None)
@@ -164,11 +172,11 @@ def _extract_text(resp) -> str:
         for c in cand_list:
             content = getattr(c, "content", None)
             if content and getattr(content, "parts", None):
-                parts = content.parts
-                for p in parts:
+                for p in content.parts:
                     if getattr(p, "text", None):
                         return p.text.strip()
     return ""
+
 
 def _is_blocked_or_empty(resp) -> bool:
     text = _extract_text(resp)
@@ -184,6 +192,7 @@ def _is_blocked_or_empty(resp) -> bool:
         pass
     return True
 
+
 def gemini_generate(prompt: str) -> str:
     resp = _gemini_generate_once(prompt, temperature=0.2)
     if not _is_blocked_or_empty(resp):
@@ -194,13 +203,10 @@ def gemini_generate(prompt: str) -> str:
         + prompt
     )
     resp_retry = _gemini_generate_once(softened, temperature=0.1)
-    text = _extract_text(resp_retry)
-    if text:
-        return text
-    return "Unable to generate content at this time. Please try rephrasing the question in neutral, educational terms."
+    return _extract_text(resp_retry) or "Unable to generate content at this time."
 
-# --------------- Main Processing ---------------
 
+# ---------------- Main Processing ----------------
 def process_input(chat_name: str, user_input: str, return_source=False):
     current_chat = load_chat(chat_name)
     history_pairs = list(zip(current_chat.get("past", []), current_chat.get("generated", [])))
@@ -210,9 +216,7 @@ def process_input(chat_name: str, user_input: str, return_source=False):
     context_text, source_type = hybrid_retrieve(user_input, k=5)
 
     if context_text and len(context_text.strip()) > 30 and source_type != "GEN":
-        context_prompt = f"""Relevant IPC excerpts:\n\n{context_text}
-
-Now answer the user’s question concisely using these sections where helpful."""
+        context_prompt = f"Relevant IPC excerpts:\n\n{context_text}\n\nNow answer the user’s question concisely."
     else:
         source_type = "GEN"
         context_prompt = "No specific IPC section retrieved. Provide a general, educational summary under Indian law."
