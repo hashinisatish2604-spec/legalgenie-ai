@@ -1,3 +1,6 @@
+import os
+import logging
+import sys
 from flask import Flask, render_template, request, jsonify, send_from_directory
 try:
     from views.chatbotLegalv2 import process_input, create_new_chat, get_chat_list, load_chat
@@ -14,9 +17,7 @@ try:
 except Exception as e:
     print(f"❌ Failed to import docGen: {e}", file=sys.stderr)
     raise
-import os
-import logging
-import sys
+    
 print("🚀 Starting Flask app...", file=sys.stderr)
 
 app = Flask(__name__)
