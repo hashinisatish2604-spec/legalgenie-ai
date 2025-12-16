@@ -2,27 +2,23 @@ Flask
 gunicorn
 python-dotenv
 
-# AI / LLM
-langchain
-langchain-community
-langchain-huggingface
-google-generativeai
+# LangChain (stable for Python 3.11)
+langchain==0.1.20
+langchain-community==0.0.38
 
-# NLP / Embeddings
+# Embeddings / NLP
 sentence-transformers
 transformers
 faiss-cpu
-nltk
-numpy
+numpy<2
+
+# Redis
+upstash-redis
 
 # Documents
 python-docx
 PyPDF2
 Pillow
-pytesseract
-
-# Redis
-upstash-redis
 
 # Voice
 gTTS
