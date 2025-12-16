@@ -1,153 +1,223 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>AskLegal.ai - Document Generator</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+  <title>Generate Legal Document</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <style>
-    body { font-family: 'Space Mono', monospace; }
-    html, body { overflow-x: hidden; margin: 0; padding: 0; height: 100%; }
-    @media (max-width: 768px) {
-      .no-hover:hover {
-        background-color: inherit !important;
-      }
-    }
-  </style>
 </head>
-<body class="bg-gray-50 text-gray-900 h-screen">
-  <div class="flex h-full relative">
-    <aside id="sidebar" class="w-64 bg-white border-r border-gray-200 flex flex-col absolute md:relative z-20 h-full transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out">
-      <div class="p-4 font-bold text-xl flex items-center space-x-2">
-        <span>⚖️</span>
-        <span>AskLegal.ai</span>
-      </div>
-      <div class="p-2">
-        <input type="text" placeholder="Search" class="w-full p-2 border rounded-lg text-sm focus:outline-none focus:ring"/>
-      </div>
-      <nav class="flex-1 overflow-y-auto">
-        <ul class="space-y-2 p-2 text-sm" id="chat-list">
-          {% for chat in chat_list | reverse %}
-          <li>
-            <button 
-              class="block w-full text-left p-2 rounded hover:bg-gray-100 truncate no-hover" 
-              onclick="window.location.href='/?chat={{ chat.name }}'" 
-              title="{{ chat.title }}">
-              {{ chat.title }}
-            </button>
-          </li>
-          {% endfor %}
-        </ul>
-      </nav>
-      <div class="p-2 hidden md:block">
-        <button id="new-chat-btn" class="w-full bg-black text-white p-2 rounded-lg hover:bg-gray-800 text-sm">New chat</button>
-      </div>
-    </aside>
 
-    <button id="sidebar-toggle" class="fixed bottom-4 left-4 z-30 bg-white border border-gray-300 rounded-full p-1 shadow md:hidden">
-      <i data-lucide="menu" id="toggle-icon" class="w-5 h-5"></i>
-    </button>
+<body class="bg-slate-900 text-white min-h-screen p-8">
 
-    <button id="floating-new-chat" class="fixed bottom-4 right-4 z-30 bg-black text-white p-3 rounded-full shadow md:hidden">
-      + New Chat
-    </button>
+<a href="/" class="text-yellow-400 font-semibold mb-6 inline-block">⬅ Back</a>
 
-    <main class="flex-1 flex flex-col">
-      <header class="p-4 flex justify-between items-center bg-gray-50">
-        <div class="flex space-x-4">
-          <a href="/"><button class="text-gray-500 hover:text-black">Chat</button></a>
-          <a href="/predict"><button class="text-gray-500 hover:text-black">Predict</button></a>
-          <a href="/generate"><button class="font-semibold">Generate</button></a>
-        </div>
-      </header>
+<h1 class="text-4xl text-yellow-400 mb-2">Generate Legal Document</h1>
+<p class="text-slate-400 mb-4">Select a document type, language, and fill the form.</p>
 
-      <div class="flex-1 p-6 space-y-6 overflow-y-auto max-w-3xl mx-auto">
-        <div class="bg-white rounded-lg shadow p-6">
-          <h1 class="text-lg font-semibold mb-4">📃 Legal Document Generator</h1>
-          <form id="generate-form">
-            <label for="doc-prompt" class="block mb-2 font-medium">Enter document request (e.g., "Bail application for Kumar")</label>
-            <input 
-              type="text"
-              id="doc-prompt"
-              name="doc_prompt"
-              placeholder="Type your request..."
-              class="w-full border border-gray-300 rounded p-2 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
-            <div class="text-center">
-              <button type="submit" class="bg-black text-white px-6 py-2 rounded-xl hover:bg-gray-800">
-                Generate Document
-              </button>
-            </div>
-          </form>
-        </div>
+<!-- ================= LANGUAGE SELECTOR ================= -->
+<select id="language"
+  class="mb-6 bg-slate-800 border border-slate-600 px-4 py-2 rounded">
+  <option value="en">English</option>
+  <option value="hi">Hindi</option>
+  <option value="kn">Kannada</option>
+</select>
 
-        <div id="download-section" class="hidden bg-white rounded-lg shadow p-6 text-center">
-          <h2 class="text-lg font-semibold mb-2">✅ Your document is ready!</h2>
-          <a id="download-link" href="#" class="inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-            Download Document
-          </a>
-        </div>
+<!-- ================= DOCUMENT CARDS ================= -->
+<div class="grid grid-cols-4 gap-4 mb-10">
 
-        <div id="error-msg" class="hidden text-red-500 text-sm"></div>
-      </div>
-    </main>
-  </div>
+  <div class="card" onclick="loadForm('bail')">⚖ Bail<br><span>Bail Application</span></div>
+  <div class="card" onclick="loadForm('anticipatory')">🛡 Shield<br><span>Anticipatory Bail</span></div>
+  <div class="card" onclick="loadForm('fir')">🚓 Police<br><span>FIR Draft</span></div>
+  <div class="card" onclick="loadForm('affidavit')">📄 Document<br><span>Affidavit</span></div>
 
-  <script>
-    lucide.createIcons();
+  <div class="card" onclick="loadForm('rent')">🏠 Home<br><span>Rent Agreement</span></div>
+  <div class="card" onclick="loadForm('will')">📜 Will<br><span>Will</span></div>
+  <div class="card" onclick="loadForm('poa')">✍ Signature<br><span>Power of Attorney</span></div>
+  <div class="card" onclick="loadForm('custom')">➕ Plus<br><span>Custom</span></div>
 
-    const sidebar = document.getElementById('sidebar');
-    const toggleBtn = document.getElementById('sidebar-toggle');
-    const toggleIcon = document.getElementById('toggle-icon');
-    let sidebarOpen = false;
+</div>
 
-    toggleBtn.addEventListener('click', () => {
-      sidebarOpen = !sidebarOpen;
-      sidebar.classList.toggle('-translate-x-full');
-      toggleIcon.setAttribute('data-lucide', sidebarOpen ? 'menu' : 'menu');
-      lucide.createIcons();
-    });
+<h2 id="formTitle" class="text-2xl mb-4"></h2>
+<div id="formFields" class="grid grid-cols-2 gap-6"></div>
 
-    document.getElementById('floating-new-chat').addEventListener('click', async () => {
-      window.location.href = '/';
-    });
+<button onclick="generateDoc()"
+  class="mt-8 bg-yellow-400 text-black px-8 py-3 rounded font-semibold">
+  Generate Document
+</button>
 
-    document.getElementById('new-chat-btn').addEventListener('click', async () => {
-      window.location.href = '/';
-    });
+<style>
+.card{
+  background:#0f172a;
+  border:1px solid #1e293b;
+  padding:20px;
+  border-radius:12px;
+  cursor:pointer;
+}
+.card span{color:#94a3b8;font-size:14px}
+.card:hover{border-color:#facc15}
+.input{
+  background:#1e293b;
+  padding:10px;
+  border-radius:6px;
+  width:100%;
+}
+.textarea{
+  background:#1e293b;
+  padding:10px;
+  border-radius:6px;
+  width:100%;
+  height:120px;
+}
+.mic{
+  margin-top:6px;
+  background:#facc15;
+  color:black;
+  padding:4px 10px;
+  border-radius:6px;
+}
+</style>
 
-    document.getElementById('generate-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const prompt = document.getElementById('doc-prompt').value.trim();
-      if (!prompt) {
-        alert("Please enter a document request.");
-        return;
-      }
+<script>
+let currentDoc = null;
+let recognition = null;
+let activeField = null;
 
-      const response = await fetch('/generate_document', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ doc_prompt: prompt })
-      });
+if ("webkitSpeechRecognition" in window) {
+  recognition = new webkitSpeechRecognition();
+  recognition.lang = "en-IN";
+  recognition.onresult = e => activeField.value = e.results[0][0].transcript;
+}
 
-      const data = await response.json();
-      if (data.error) {
-        document.getElementById('error-msg').innerText = data.error;
-        document.getElementById('error-msg').classList.remove('hidden');
-        document.getElementById('download-section').classList.add('hidden');
-        return;
-      }
+function speakTo(id){
+  activeField = document.getElementById(id);
+  recognition.start();
+}
 
-      document.getElementById('error-msg').classList.add('hidden');
-      document.getElementById('download-link').href = data.download_url;
-      document.getElementById('download-link').setAttribute('download', data.file_name);
-      document.getElementById('download-section').classList.remove('hidden');
-    });
-  </script>
+/* ========= FORMS ========= */
+const FORMS = {
+  bail:{
+    title:"Bail Application",
+    fields:[
+      "Court Name","Case Number","Police Station","Applicant Name",
+      "Applicant Address","Accused Age","Offence","Sections",
+      "Arrest Date","Facts","Grounds for Bail","Previous Bail Orders"
+    ]
+  },
+  anticipatory:{
+    title:"Anticipatory Bail",
+    fields:[
+      "Court Name","Applicant Name","FIR Number","Police Station",
+      "Offence","Sections","Grounds","Reason for Apprehension"
+    ]
+  },
+  fir:{
+    title:"FIR Draft",
+    fields:[
+      "Police Station","FIR Number","Complainant Name",
+      "Complainant Address","Accused Name","Incident Description",
+      "Date of Incident","Time of Incident","Place of Incident"
+    ]
+  },
+  affidavit:{
+    title:"Affidavit",
+    fields:[
+      "Deponent Name","Age","Father/Mother Name","Address",
+      "Occupation","Statement","Place","Date"
+    ]
+  },
+  rent:{
+    title:"Rent Agreement",
+    fields:[
+      "Landlord Name","Tenant Name","Property Address",
+      "Purpose of Rent","Monthly Rent","Deposit",
+      "Rent Start Date","Duration","Maintenance Charges"
+    ]
+  },
+  will:{
+    title:"Will",
+    fields:[
+      "Testator Name","Age","Address","Executor Name",
+      "Beneficiaries","Assets Description","Witness 1","Witness 2"
+    ]
+  },
+  poa:{
+    title:"Power of Attorney",
+    fields:[
+      "Grantor Name","Grantee Name","Relationship",
+      "Powers Granted","Property Details","Duration","Place"
+    ]
+  },
+  custom:{
+    title:"Custom Document",
+    fields:[
+      "Document Title","Document Description",
+      "Additional Notes","Place","Date"
+    ]
+  }
+};
+
+function loadForm(type){
+  currentDoc = type;
+  formFields.innerHTML = "";
+  formTitle.textContent = FORMS[type].title;
+
+  FORMS[type].fields.forEach(f=>{
+    const id = f.replace(/\s+/g,"_").toLowerCase();
+    const isLong =
+      f.includes("Facts") ||
+      f.includes("Grounds") ||
+      f.includes("Description") ||
+      f.includes("Statement") ||
+      f.includes("Notes") ||
+      f.includes("Details");
+
+    if(isLong){
+      formFields.innerHTML += `
+        <div class="col-span-2">
+          <label>${f}</label>
+          <textarea id="${id}" class="textarea"></textarea>
+          <button class="mic" onclick="speakTo('${id}')">🎤 Speak</button>
+        </div>`;
+    } else {
+      formFields.innerHTML += `
+        <div>
+          <label>${f}</label>
+          <input id="${id}" class="input"/>
+        </div>`;
+    }
+  });
+}
+
+async function generateDoc(){
+  if(!currentDoc) return alert("Select a document type");
+
+  const data = {};
+  document.querySelectorAll("#formFields input, #formFields textarea")
+    .forEach(i => data[i.id] = i.value);
+
+  const res = await fetch("/generate", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      doc_type: currentDoc,
+      language: document.getElementById("language").value,
+      form_data: data
+    })
+  });
+
+  if (!res.ok) return alert("Document generation failed");
+
+  const blob = await res.blob();
+  const url = window.URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${currentDoc}_document.docx`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+
+  window.URL.revokeObjectURL(url);
+}
+</script>
+
 </body>
 </html>
