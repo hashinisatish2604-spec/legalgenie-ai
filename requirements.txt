@@ -1,3 +1,4 @@
+# Core
 Flask
 gunicorn
 python-dotenv
@@ -6,7 +7,7 @@ python-dotenv
 langchain==0.1.20
 langchain-community==0.0.38
 
-# AI / LLM
+# LLM (Groq)
 groq
 
 # Embeddings / NLP
@@ -15,10 +16,11 @@ transformers
 faiss-cpu
 numpy<2
 
-# Redis
+# Redis (BOTH needed)
+redis
 upstash-redis
 
-# Documents
+# Document generation
 python-docx
 PyPDF2
 Pillow
