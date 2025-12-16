@@ -6,6 +6,9 @@ python-dotenv
 langchain==0.1.20
 langchain-community==0.0.38
 
+# AI / LLM
+groq
+
 # Embeddings / NLP
 sentence-transformers
 transformers
