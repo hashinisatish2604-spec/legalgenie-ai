@@ -1,22 +1,28 @@
-Flask==3.1.2
-gunicorn==21.2.0
-python-dotenv==1.1.1
+Flask
+gunicorn
+python-dotenv
 
-google-generativeai>=0.8.3
-langchain==0.3.27
-langchain-community==0.3.29
-langchain-huggingface==0.3.1
+# AI / LLM
+langchain
+langchain-community
+langchain-huggingface
+google-generativeai
 
-sentence-transformers==5.1.0
-transformers==4.56.0
-faiss-cpu==1.12.0
-nltk==3.9.1
-numpy>=1.26.2,<2.0.0
+# NLP / Embeddings
+sentence-transformers
+transformers
+faiss-cpu
+nltk
+numpy
 
-python-docx==1.2.0
-PyPDF2==3.0.1
-Pillow==11.3.0
-pytesseract==0.3.13
+# Documents
+python-docx
+PyPDF2
+Pillow
+pytesseract
 
-upstash-redis==1.4.0
-gTTS==2.5.1
+# Redis
+upstash-redis
+
+# Voice
+gTTS
