@@ -1,252 +1,165 @@
-from dotenv import load_dotenv
-load_dotenv()
+from docx import Document
+from docx.shared import Pt
+from docx.enum.text import WD_ALIGN_PARAGRAPH
 
-from utils.groq_client import call_llm
 
-# =====================================================
-# LANGUAGE MAP
-# =====================================================
-LANGUAGE_MAP = {
-    "en": "Respond in English.",
-    "hi": "Respond in Hindi using Devanagari script.",
-    "kn": "Respond in Kannada script."
-}
+def add_heading(doc, text):
+    p = doc.add_paragraph()
+    run = p.add_run(text)
+    run.bold = True
+    run.font.size = Pt(14)
+    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
-# =====================================================
-# DOCUMENT TEMPLATES
-# =====================================================
-TEMPLATES = {
 
-    "bail": """
-IN THE HON'BLE COURT OF {court_name}
+def add_para(doc, text, bold=False):
+    p = doc.add_paragraph()
+    run = p.add_run(text)
+    run.bold = bold
+    run.font.size = Pt(11)
 
-Case Number: {case_number}
-Police Station: {police_station}
 
-Applicant:
-{applicant_name}
-{applicant_address}
+def generate_document(doc_type, d, language="en"):
+    doc = Document()
 
-Age of Accused: {accused_age}
+    # ================= BAIL APPLICATION =================
+    if doc_type == "Bail Application":
+        add_heading(doc, "IN THE HON'BLE COURT")
 
-Offence:
-{offence}
+        add_para(doc, f"Date: {d.get('date')}", bold=True)
+        add_para(doc, "")
 
-Sections:
-{sections}
+        add_para(doc, "To,")
+        add_para(doc, "The Hon'ble Judge,")
+        add_para(doc, d.get("court"))
+        add_para(doc, "")
 
-Date of Arrest:
-{arrest_date}
+        add_para(
+            doc,
+            f"Subject: Bail Application for {d.get('accused')} (Case No: {d.get('case_no')})",
+            bold=True
+        )
 
-FACTS OF THE CASE:
-{facts}
+        add_para(doc, "")
+        add_para(
+            doc,
+            f"I, {d.get('petitioner')}, respectfully submit this bail application on behalf of "
+            f"{d.get('accused')}. The grounds for seeking bail are as follows:"
+        )
 
-GROUNDS FOR BAIL:
-{grounds_for_bail}
+        add_para(doc, "")
+        add_para(doc, d.get("reason"))
 
-Previous Bail Orders:
-{previous_bail_orders}
+        add_para(doc, "")
+        add_para(doc, "Hence, it is humbly prayed that this Hon'ble Court may be pleased to grant bail.")
 
-PRAYER:
-The applicant humbly prays that this Hon’ble Court may be pleased to grant bail in the interest of justice.
+        add_para(doc, "")
+        add_para(doc, "Yours faithfully,")
+        add_para(doc, d.get("petitioner"), bold=True)
 
-Place:
-Date:
-""",
+        return doc
 
-    "anticipatory": """
-ANTICIPATORY BAIL APPLICATION
+    # ================= FIR DRAFT =================
+    if doc_type == "FIR Draft":
+        add_heading(doc, "FIRST INFORMATION REPORT (FIR)")
 
-Court Name:
-{court_name}
+        add_para(doc, f"Police Station: {d.get('fir_police')}", bold=True)
+        add_para(doc, f"Date of Occurrence: {d.get('fir_date')}")
+        add_para(doc, f"Place of Occurrence: {d.get('fir_place')}")
 
-Applicant Name:
-{applicant_name}
+        add_para(doc, "")
+        add_para(doc, f"Complainant Name: {d.get('fir_name')}", bold=True)
 
-FIR Number:
-{fir_number}
+        add_para(doc, "")
+        add_para(doc, "Facts of the Case:", bold=True)
+        add_para(doc, d.get("fir_facts"))
 
-Police Station:
-{police_station}
+        add_para(doc, "")
+        add_para(doc, "I hereby request the concerned authorities to take appropriate legal action.")
 
-Offence:
-{offence}
+        add_para(doc, "")
+        add_para(doc, "Signature of Complainant")
+        add_para(doc, d.get("fir_name"), bold=True)
 
-Sections:
-{sections}
+        return doc
 
-Grounds:
-{grounds}
+    # ================= RENT AGREEMENT =================
+    if doc_type == "Rent Agreement":
+        add_heading(doc, "RENT AGREEMENT")
 
-Reason for Apprehension:
-{reason_for_apprehension}
-""",
+        add_para(
+            doc,
+            f"This Rent Agreement is made on {d.get('rent_date')} between "
+            f"{d.get('landlord')} (Landlord) and {d.get('tenant')} (Tenant)."
+        )
 
-    "fir": """
-FIRST INFORMATION REPORT (FIR)
+        add_para(doc, "")
+        add_para(doc, "Property Details:", bold=True)
+        add_para(doc, d.get("property"))
 
-Police Station:
-{police_station}
+        add_para(doc, "")
+        add_para(doc, f"Monthly Rent: ₹{d.get('rent')}")
+        add_para(doc, f"Security Deposit: ₹{d.get('deposit')}")
+        add_para(doc, f"Lease Period: {d.get('lease_period')}")
 
-FIR Number:
-{fir_number}
+        add_para(doc, "")
+        add_para(doc, "Both parties hereby agree to the above terms and conditions.")
 
-Complainant Name:
-{complainant_name}
+        add_para(doc, "")
+        add_para(doc, "Landlord Signature: ________")
+        add_para(doc, "Tenant Signature: ________")
 
-Complainant Address:
-{complainant_address}
+        return doc
 
-Accused Name:
-{accused_name}
+    # ================= WILL =================
+    if doc_type == "Will":
+        add_heading(doc, "LAST WILL AND TESTAMENT")
 
-Incident Description:
-{incident_description}
+        add_para(
+            doc,
+            f"I, {d.get('testator')}, residing at {d.get('testator_address')}, "
+            "being of sound mind, declare this to be my Last Will."
+        )
 
-Date of Incident:
-{date_of_incident}
+        add_para(doc, "")
+        add_para(doc, "Details of Assets:", bold=True)
+        add_para(doc, d.get("assets"))
 
-Time of Incident:
-{time_of_incident}
+        add_para(doc, "")
+        add_para(doc, "Beneficiary Details:", bold=True)
+        add_para(doc, d.get("beneficiary"))
 
-Place of Incident:
-{place_of_incident}
-""",
+        add_para(doc, "")
+        add_para(doc, f"Executor: {d.get('executor')}")
 
-    "affidavit": """
-AFFIDAVIT
+        add_para(doc, "")
+        add_para(doc, f"Date: {d.get('will_date')}")
+        add_para(doc, "Signature of Testator")
 
-I, {deponent_name}, aged {age}, S/o or D/o {father_mother_name},
-residing at {address}, occupation {occupation},
-do hereby solemnly affirm as follows:
+        return doc
 
-{statement}
+    # ================= POWER OF ATTORNEY =================
+    if doc_type == "Power of Attorney":
+        add_heading(doc, "POWER OF ATTORNEY")
 
-Place: {place}
-Date: {date}
-""",
+        add_para(
+            doc,
+            f"I, {d.get('principal')}, hereby appoint {d.get('agent')} as my lawful attorney."
+        )
 
-    "rent": """
-RENT AGREEMENT
+        add_para(doc, "")
+        add_para(doc, "Powers Granted:", bold=True)
+        add_para(doc, d.get("authority"))
 
-This Rent Agreement is made between:
+        add_para(doc, "")
+        add_para(doc, f"Date: {d.get('poa_date')}")
+        add_para(doc, "Signature of Principal")
 
-Landlord:
-{landlord_name}
+        return doc
 
-Tenant:
-{tenant_name}
+    # ================= CUSTOM =================
+    if doc_type == "Custom":
+        add_heading(doc, "LEGAL DOCUMENT")
+        add_para(doc, d.get("custom_text"))
+        return doc
 
-Property Address:
-{property_address}
-
-Purpose of Rent:
-{purpose_of_rent}
-
-Monthly Rent:
-{monthly_rent}
-
-Security Deposit:
-{deposit}
-
-Rent Start Date:
-{rent_start_date}
-
-Duration:
-{duration}
-
-Maintenance Charges:
-{maintenance_charges}
-""",
-
-    "will": """
-LAST WILL AND TESTAMENT
-
-I, {testator_name}, aged {age}, residing at {address},
-hereby declare this to be my last Will.
-
-Executor:
-{executor_name}
-
-Beneficiaries:
-{beneficiaries}
-
-Assets Description:
-{assets_description}
-
-Witness 1:
-{witness_1}
-
-Witness 2:
-{witness_2}
-""",
-
-    "poa": """
-POWER OF ATTORNEY
-
-Grantor:
-{grantor_name}
-
-Grantee:
-{grantee_name}
-
-Relationship:
-{relationship}
-
-Powers Granted:
-{powers_granted}
-
-Property Details:
-{property_details}
-
-Duration:
-{duration}
-
-Place:
-{place}
-""",
-
-    "custom": """
-{document_title}
-
-{document_description}
-
-Additional Notes:
-{additional_notes}
-
-Place: {place}
-Date: {date}
-"""
-}
-
-# =====================================================
-# SAFE DOCUMENT GENERATOR
-# =====================================================
-def generate_document(doc_type, form_data, language="en"):
-    """
-    Generates a legal document in the selected language.
-    Safely fills missing fields and calls the LLM.
-    """
-
-    template = TEMPLATES.get(doc_type)
-    if not template:
-        return "Invalid document type."
-
-    # ---------- SAFE FORMAT (prevents KeyError) ----------
-    class SafeDict(dict):
-        def __missing__(self, key):
-            return ""
-
-    prompt_body = template.format_map(SafeDict(form_data))
-
-    final_prompt = f"""
-You are an expert Indian legal document drafter.
-
-{LANGUAGE_MAP.get(language, "Respond in English.")}
-
-Draft the following legal document professionally:
-
-{prompt_body}
-"""
-
-    return call_llm(final_prompt)
+    return doc

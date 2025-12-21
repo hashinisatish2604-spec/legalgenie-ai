@@ -1,221 +1,326 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Generate Legal Document</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+<meta charset="UTF-8">
+<title>Generate Legal Document</title>
+
+<style>
+    body {
+        margin: 0;
+        background: radial-gradient(circle at top, #0c1b33, #020617);
+        color: white;
+        font-family: "Segoe UI", sans-serif;
+    }
+
+    .container {
+        width: 90%;
+        margin: auto;
+        padding: 30px 0;
+    }
+
+    /* ===== HEADER ===== */
+    .top-bar {
+        position: relative;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .back-btn {
+        position: absolute;
+        left: 0;
+        color: gold;
+        cursor: pointer;
+        font-weight: 600;
+    }
+
+    h1 {
+        margin: 0;
+        font-size: 24px;
+    }
+
+    /* ===== CARDS ===== */
+    .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 18px;
+        margin-top: 30px;
+    }
+
+    .card {
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.12);
+        border-radius: 14px;
+        padding: 18px;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+    .card:hover {
+        transform: translateY(-3px);
+        border-color: gold;
+    }
+
+    .card-title {
+        font-size: 16px;
+        font-weight: 600;
+    }
+
+    .card-sub {
+        font-size: 13px;
+        opacity: 0.7;
+        margin-top: 5px;
+    }
+
+    /* ===== FORM ===== */
+    #formView {
+        display: none;
+        max-width: 800px;
+        margin: auto;
+    }
+
+    .form-group {
+        margin-bottom: 14px;
+    }
+
+    label {
+        display: block;
+        font-size: 13px;
+        margin-bottom: 5px;
+        opacity: 0.85;
+    }
+
+    input, textarea {
+        width: 100%;
+        padding: 10px;
+        background: #020617;
+        border: 1px solid rgba(255,255,255,0.2);
+        border-radius: 6px;
+        color: white;
+    }
+
+    textarea {
+        min-height: 80px;
+    }
+
+    button {
+        width: 100%;
+        margin-top: 15px;
+        padding: 12px;
+        background: gold;
+        border: none;
+        border-radius: 8px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+</style>
 </head>
 
-<body class="bg-slate-900 text-white min-h-screen p-8">
+<body>
 
-<a href="/" class="text-yellow-400 font-semibold mb-6 inline-block">⬅ Back</a>
+<div class="container">
 
-<h1 class="text-4xl text-yellow-400 mb-2">Generate Legal Document</h1>
-<p class="text-slate-400 mb-4">Select a document type, language, and fill the form.</p>
+    <!-- ===== HEADER ===== -->
+    <div class="top-bar">
+        <a href="/" class="back-btn">⬅ Back</a>
+        <h1>Generate Legal Document</h1>
+    </div>
 
-<!-- ================= LANGUAGE SELECTOR ================= -->
-<select id="language"
-  class="mb-6 bg-slate-800 border border-slate-600 px-4 py-2 rounded">
-  <option value="en">English</option>
-  <option value="hi">Hindi</option>
-  <option value="kn">Kannada</option>
-</select>
+    <!-- ===== CARD SELECTION ===== -->
+    <div id="cardView">
+        <div class="grid">
 
-<!-- ================= DOCUMENT CARDS ================= -->
-<div class="grid grid-cols-4 gap-4 mb-10">
+            <div class="card" onclick="openForm('Bail Application')">
+                <div class="card-title">⚖️ Bail Application</div>
+                <div class="card-sub">Regular Bail</div>
+            </div>
 
-  <div class="card" onclick="loadForm('bail')">⚖ Bail<br><span>Bail Application</span></div>
-  <div class="card" onclick="loadForm('anticipatory')">🛡 Shield<br><span>Anticipatory Bail</span></div>
-  <div class="card" onclick="loadForm('fir')">🚓 Police<br><span>FIR Draft</span></div>
-  <div class="card" onclick="loadForm('affidavit')">📄 Document<br><span>Affidavit</span></div>
+            <div class="card" onclick="openForm('Anticipatory Bail')">
+                <div class="card-title">🛡 Anticipatory Bail</div>
+                <div class="card-sub">Pre-arrest bail</div>
+            </div>
 
-  <div class="card" onclick="loadForm('rent')">🏠 Home<br><span>Rent Agreement</span></div>
-  <div class="card" onclick="loadForm('will')">📜 Will<br><span>Will</span></div>
-  <div class="card" onclick="loadForm('poa')">✍ Signature<br><span>Power of Attorney</span></div>
-  <div class="card" onclick="loadForm('custom')">➕ Plus<br><span>Custom</span></div>
+            <div class="card" onclick="openForm('FIR Draft')">
+                <div class="card-title">🚓 FIR Draft</div>
+                <div class="card-sub">Police complaint</div>
+            </div>
+
+            <div class="card" onclick="openForm('Affidavit')">
+                <div class="card-title">📄 Affidavit</div>
+                <div class="card-sub">Sworn statement</div>
+            </div>
+
+            <div class="card" onclick="openForm('Rent Agreement')">
+                <div class="card-title">🏠 Rent Agreement</div>
+                <div class="card-sub">Lease document</div>
+            </div>
+
+            <div class="card" onclick="openForm('Will')">
+                <div class="card-title">📜 Will</div>
+                <div class="card-sub">Last testament</div>
+            </div>
+
+            <div class="card" onclick="openForm('Power of Attorney')">
+                <div class="card-title">✍️ Power of Attorney</div>
+                <div class="card-sub">Authorization</div>
+            </div>
+
+            <div class="card" onclick="openForm('Custom')">
+                <div class="card-title">➕ Custom</div>
+                <div class="card-sub">Write your own</div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ===== FORM VIEW ===== -->
+    <div id="formView">
+        <form id="dynamicForm"></form>
+        <button onclick="generateDoc()">Generate Document</button>
+    </div>
 
 </div>
 
-<h2 id="formTitle" class="text-2xl mb-4"></h2>
-<div id="formFields" class="grid grid-cols-2 gap-6"></div>
-
-<button onclick="generateDoc()"
-  class="mt-8 bg-yellow-400 text-black px-8 py-3 rounded font-semibold">
-  Generate Document
-</button>
-
-<style>
-.card{
-  background:#0f172a;
-  border:1px solid #1e293b;
-  padding:20px;
-  border-radius:12px;
-  cursor:pointer;
-}
-.card span{color:#94a3b8;font-size:14px}
-.card:hover{border-color:#facc15}
-.input{
-  background:#1e293b;
-  padding:10px;
-  border-radius:6px;
-  width:100%;
-}
-.textarea{
-  background:#1e293b;
-  padding:10px;
-  border-radius:6px;
-  width:100%;
-  height:120px;
-}
-.mic{
-  margin-top:6px;
-  background:#facc15;
-  color:black;
-  padding:4px 10px;
-  border-radius:6px;
-}
-</style>
-
 <script>
-let currentDoc = null;
-let recognition = null;
-let activeField = null;
+/* ========= FORM SCHEMA ========= */
+const formSchema = {
+    "Bail Application": [
+        { name:"court_name", label:"Court Name", type:"text" },
+        { name:"court_place", label:"Court Place", type:"text" },
+        { name:"case_number", label:"Case / Crime Number", type:"text" },
+        { name:"police_station", label:"Police Station", type:"text" },
+        { name:"applicant_name", label:"Applicant / Accused Name", type:"text" },
+        { name:"age", label:"Age", type:"number" },
+        { name:"address", label:"Residential Address", type:"textarea" },
+        { name:"ipc_sections", label:"IPC / Act Sections", type:"text" },
+        { name:"date_of_arrest", label:"Date of Arrest", type:"date" },
+        { name:"reason_for_bail", label:"Grounds / Reasons for Bail", type:"textarea" },
+        { name:"place", label:"Place", type:"text" },
+        { name:"date", label:"Date", type:"date" }
+    ],
 
-if ("webkitSpeechRecognition" in window) {
-  recognition = new webkitSpeechRecognition();
-  recognition.lang = "en-IN";
-  recognition.onresult = e => activeField.value = e.results[0][0].transcript;
-}
+    "Anticipatory Bail": [
+        { name:"court_name", label:"Court Name", type:"text" },
+        { name:"court_place", label:"Court Place", type:"text" },
+        { name:"applicant_name", label:"Applicant Name", type:"text" },
+        { name:"age", label:"Age", type:"number" },
+        { name:"ipc_sections", label:"IPC / Act Sections", type:"text" },
+        { name:"apprehension_reason", label:"Reason for Apprehension of Arrest", type:"textarea" },
+        { name:"police_station", label:"Concerned Police Station", type:"text" },
+        { name:"date", label:"Date", type:"date" }
+    ],
 
-function speakTo(id){
-  activeField = document.getElementById(id);
-  recognition.start();
-}
+    "FIR Draft": [
+        { name:"police_station", label:"Police Station", type:"text" },
+        { name:"district", label:"District", type:"text" },
+        { name:"complainant_name", label:"Complainant Name", type:"text" },
+        { name:"complainant_address", label:"Complainant Address", type:"textarea" },
+        { name:"complainant_contact", label:"Contact Number", type:"text" },
+        { name:"accused_name", label:"Accused Name (if known)", type:"text" },
+        { name:"incident_date", label:"Date of Incident", type:"date" },
+        { name:"incident_time", label:"Time of Incident", type:"time" },
+        { name:"incident_place", label:"Place of Incident", type:"text" },
+        { name:"incident_details", label:"Detailed Description of Incident", type:"textarea" }
+    ],
 
-/* ========= FORMS ========= */
-const FORMS = {
-  bail:{
-    title:"Bail Application",
-    fields:[
-      "Court Name","Case Number","Police Station","Applicant Name",
-      "Applicant Address","Accused Age","Offence","Sections",
-      "Arrest Date","Facts","Grounds for Bail","Previous Bail Orders"
+    "Affidavit": [
+        { name:"deponent_name", label:"Deponent Name", type:"text" },
+        { name:"age", label:"Age", type:"number" },
+        { name:"address", label:"Address", type:"textarea" },
+        { name:"statement", label:"Affidavit Statement", type:"textarea" },
+        { name:"place", label:"Place", type:"text" },
+        { name:"date", label:"Date", type:"date" }
+    ],
+
+    "Rent Agreement": [
+        { name:"owner_name", label:"Owner Name", type:"text" },
+        { name:"tenant_name", label:"Tenant Name", type:"text" },
+        { name:"property_address", label:"Property Address", type:"textarea" },
+        { name:"rent_amount", label:"Monthly Rent (₹)", type:"number" },
+        { name:"security_deposit", label:"Security Deposit (₹)", type:"number" },
+        { name:"start_date", label:"Agreement Start Date", type:"date" },
+        { name:"end_date", label:"Agreement End Date", type:"date" },
+        { name:"notice_period", label:"Notice Period (Months)", type:"number" }
+    ],
+
+    "Will": [
+        { name:"testator_name", label:"Testator Name", type:"text" },
+        { name:"age", label:"Age", type:"number" },
+        { name:"address", label:"Address", type:"textarea" },
+        { name:"beneficiary_details", label:"Beneficiary Details", type:"textarea" },
+        { name:"witness_1", label:"Witness 1 Name", type:"text" },
+        { name:"witness_2", label:"Witness 2 Name", type:"text" },
+        { name:"date", label:"Date of Will", type:"date" }
+    ],
+
+    "Power of Attorney": [
+        { name:"principal_name", label:"Principal Name", type:"text" },
+        { name:"principal_address", label:"Principal Address", type:"textarea" },
+        { name:"agent_name", label:"Agent Name", type:"text" },
+        { name:"agent_address", label:"Agent Address", type:"textarea" },
+        { name:"powers_granted", label:"Powers Granted", type:"textarea" },
+        { name:"place", label:"Place", type:"text" },
+        { name:"date", label:"Date", type:"date" }
+    ],
+
+    "Custom": [
+        { name:"custom_title", label:"Document Title", type:"text" },
+        { name:"custom_text", label:"Describe Your Requirement", type:"textarea" }
     ]
-  },
-  anticipatory:{
-    title:"Anticipatory Bail",
-    fields:[
-      "Court Name","Applicant Name","FIR Number","Police Station",
-      "Offence","Sections","Grounds","Reason for Apprehension"
-    ]
-  },
-  fir:{
-    title:"FIR Draft",
-    fields:[
-      "Police Station","FIR Number","Complainant Name",
-      "Complainant Address","Accused Name","Incident Description",
-      "Date of Incident","Time of Incident","Place of Incident"
-    ]
-  },
-  affidavit:{
-    title:"Affidavit",
-    fields:[
-      "Deponent Name","Age","Father/Mother Name","Address",
-      "Occupation","Statement","Place","Date"
-    ]
-  },
-  rent:{
-    title:"Rent Agreement",
-    fields:[
-      "Landlord Name","Tenant Name","Property Address",
-      "Purpose of Rent","Monthly Rent","Deposit",
-      "Rent Start Date","Duration","Maintenance Charges"
-    ]
-  },
-  will:{
-    title:"Will",
-    fields:[
-      "Testator Name","Age","Address","Executor Name",
-      "Beneficiaries","Assets Description","Witness 1","Witness 2"
-    ]
-  },
-  poa:{
-    title:"Power of Attorney",
-    fields:[
-      "Grantor Name","Grantee Name","Relationship",
-      "Powers Granted","Property Details","Duration","Place"
-    ]
-  },
-  custom:{
-    title:"Custom Document",
-    fields:[
-      "Document Title","Document Description",
-      "Additional Notes","Place","Date"
-    ]
-  }
 };
 
-function loadForm(type){
-  currentDoc = type;
-  formFields.innerHTML = "";
-  formTitle.textContent = FORMS[type].title;
+let currentDocType = "";
 
-  FORMS[type].fields.forEach(f=>{
-    const id = f.replace(/\s+/g,"_").toLowerCase();
-    const isLong =
-      f.includes("Facts") ||
-      f.includes("Grounds") ||
-      f.includes("Description") ||
-      f.includes("Statement") ||
-      f.includes("Notes") ||
-      f.includes("Details");
+/* ========= FUNCTIONS ========= */
+function openForm(type) {
+    currentDocType = type;
+    document.getElementById("cardView").style.display = "none";
+    document.getElementById("formView").style.display = "block";
 
-    if(isLong){
-      formFields.innerHTML += `
-        <div class="col-span-2">
-          <label>${f}</label>
-          <textarea id="${id}" class="textarea"></textarea>
-          <button class="mic" onclick="speakTo('${id}')">🎤 Speak</button>
-        </div>`;
-    } else {
-      formFields.innerHTML += `
-        <div>
-          <label>${f}</label>
-          <input id="${id}" class="input"/>
-        </div>`;
-    }
-  });
+    const form = document.getElementById("dynamicForm");
+    form.innerHTML = "";
+
+    formSchema[type].forEach(f => {
+        const div = document.createElement("div");
+        div.className = "form-group";
+
+        div.innerHTML = `
+            <label>${f.label}</label>
+            ${f.type === "textarea"
+                ? <textarea name="${f.name}"></textarea>
+                : <input type="${f.type}" name="${f.name}">}
+        `;
+        form.appendChild(div);
+    });
 }
 
-async function generateDoc(){
-  if(!currentDoc) return alert("Select a document type");
+function goBack() {
+    document.getElementById("formView").style.display = "none";
+    document.getElementById("cardView").style.display = "block";
+}
 
-  const data = {};
-  document.querySelectorAll("#formFields input, #formFields textarea")
-    .forEach(i => data[i.id] = i.value);
+function generateDoc() {
+    const data = {};
+    document.querySelectorAll("#dynamicForm [name]").forEach(el => {
+        data[el.name] = el.value;
+    });
 
-  const res = await fetch("/generate", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      doc_type: currentDoc,
-      language: document.getElementById("language").value,
-      form_data: data
+    fetch("/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            doc_type: currentDocType,
+            form_data: data
+        })
     })
-  });
-
-  if (!res.ok) return alert("Document generation failed");
-
-  const blob = await res.blob();
-  const url = window.URL.createObjectURL(blob);
-
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `${currentDoc}_document.docx`;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-
-  window.URL.revokeObjectURL(url);
+    .then(res => res.blob())
+    .then(blob => {
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = currentDocType + ".docx";
+        a.click();
+    });
 }
 </script>
 
