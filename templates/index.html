@@ -5,13 +5,11 @@
   <title>LegalGenie.AI</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    body {
-      background: radial-gradient(circle at top, #0b1d33, #020617);
-    }
+    body { background: radial-gradient(circle at top, #0b1d33, #020617); }
   </style>
 </head>
 
-<body class="text-white flex min-h-screen">
+<body class="text-white flex h-screen overflow-hidden">
 
 <!-- ================= LEFT SIDEBAR ================= -->
 <aside class="w-72 bg-[#06172d] p-6 flex flex-col justify-between">
@@ -25,10 +23,18 @@
     </div>
 
     <div class="flex flex-col gap-4">
-      <button onclick="clearChatUI()" class="bg-yellow-400 text-black py-2 rounded-lg font-semibold">
+      <button onclick="startNewChat()"
+        class="bg-yellow-400 text-black py-2 rounded-lg font-semibold">
+        New Chat
+      </button>
+
+      <button onclick="clearChatUI()"
+        class="bg-yellow-400 text-black py-2 rounded-lg font-semibold">
         Clear Chat
       </button>
-      <button onclick="clearAllHistory()" class="bg-yellow-400 text-black py-2 rounded-lg font-semibold">
+
+      <button onclick="clearAllHistory()"
+        class="bg-yellow-400 text-black py-2 rounded-lg font-semibold">
         Clear All History
       </button>
     </div>
@@ -38,61 +44,86 @@
 </aside>
 
 <!-- ================= MAIN ================= -->
-<main class="flex-1 flex flex-col overflow-hidden">
+<main class="flex-1 flex flex-col">
 
+  <!-- ================= FRONT PAGE ================= -->
+  <div id="front-page">
 
-  <!-- Hero -->
-  <div class="text-center mt-4">
-    <h1 class="text-6xl font-bold text-yellow-400">LegalGenie.AI</h1>
-    <p class="text-slate-300 mt-2">Your AI-Powered Indian Law Assistant</p>
-  </div>
-
-  <!-- Feature Cards -->
-  <div class="grid grid-cols-3 gap-8 mt-12 px-20">
-    <div class="bg-[#0b1d33] p-8 rounded-2xl border border-slate-700 text-center cursor-pointer hover:border-yellow-400"
-         onclick="activateChat()">
-      <h2 class="text-yellow-400 text-2xl mb-2">Ask Anything</h2>
-      <p class="text-slate-400 text-sm">IPC, CrPC, bail, contracts, family law…</p>
+    <!-- Hero -->
+    <div class="text-center mt-10">
+      <h1 class="text-6xl font-bold text-yellow-400">LegalGenie.AI</h1>
+      <p class="text-slate-300 mt-2">Your AI-Powered Indian Law Assistant</p>
     </div>
 
-    <div onclick="window.location.href='/predict'"
-         class="bg-[#0b1d33] p-8 rounded-2xl border border-slate-700 text-center cursor-pointer hover:border-yellow-400">
-      <h2 class="text-yellow-400 text-2xl mb-2">Judgment Prediction</h2>
-      <p class="text-slate-400 text-sm">Upload FIR/Judgment → get outcome</p>
+    <!-- Feature Cards -->
+    <div class="px-20 mt-14">
+      <div class="grid grid-cols-3 gap-8">
+
+        <!-- ASK ANYTHING -->
+        <div class="bg-[#0b1d33] p-8 rounded-2xl border border-slate-700
+                    text-center cursor-pointer hover:border-yellow-400"
+             onclick="startNewChat()">
+          <h2 class="text-yellow-400 text-2xl mb-2">Ask Anything</h2>
+          <p class="text-slate-400 text-sm">
+            IPC, CrPC, bail, contracts, family law…
+          </p>
+        </div>
+
+        <!-- PREDICTION -->
+        <div onclick="window.location.href='/predict'"
+             class="bg-[#0b1d33] p-8 rounded-2xl border border-slate-700
+                    text-center cursor-pointer hover:border-yellow-400">
+          <h2 class="text-yellow-400 text-2xl mb-2">Judgment Prediction</h2>
+          <p class="text-slate-400 text-sm">
+            Upload FIR/Judgment → get outcome
+          </p>
+        </div>
+
+        <!-- GENERATE -->
+        <div onclick="window.location.href='/generate'"
+             class="bg-[#0b1d33] p-8 rounded-2xl border border-slate-700
+                    text-center cursor-pointer hover:border-yellow-400">
+          <h2 class="text-yellow-400 text-2xl mb-2">Generate Document</h2>
+          <p class="text-slate-400 text-sm">
+            Bail, Will, Agreement, Affidavit
+          </p>
+        </div>
+
+      </div>
     </div>
 
-    <div onclick="window.location.href='/generate'"
-         class="bg-[#0b1d33] p-8 rounded-2xl border border-slate-700 text-center cursor-pointer hover:border-yellow-400">
-      <h2 class="text-yellow-400 text-2xl mb-2">Generate Document</h2>
-      <p class="text-slate-400 text-sm">Bail, Will, Agreement, Affidavit</p>
-    </div>
   </div>
 
   <!-- ================= CHAT WINDOW ================= -->
   <div id="chat-window"
-       class="flex-1 px-20 py-6 overflow-y-auto space-y-4 mt-6">
+       class="flex-1 px-20 py-6 overflow-y-auto space-y-4 mt-10
+              border-t border-slate-700">
   </div>
 
   <!-- ================= INPUT BAR ================= -->
-  <div class="px-20 pb-8">
+  <div class="px-20 pb-8" id="chat-section">
     <div class="flex items-center gap-4">
 
       <select id="language"
-              class="bg-[#0b1d33] border border-slate-700 rounded-full px-4 py-3">
+        class="bg-[#0b1d33] border border-slate-700 rounded-full px-4 py-3">
         <option value="en">English</option>
         <option value="hi">Hindi</option>
         <option value="kn">Kannada</option>
       </select>
 
       <input id="chat-input"
-             placeholder="Ask about Indian law…"
-             class="flex-1 bg-[#0b1d33] border border-slate-700 rounded-full px-6 py-3" />
+        placeholder="Ask about Indian law…"
+        class="flex-1 bg-[#0b1d33] border border-slate-700
+               rounded-full px-6 py-3" />
 
       <button onclick="startVoice()"
-              class="bg-yellow-400 text-black px-4 py-3 rounded-full">🎤</button>
+        class="bg-yellow-400 text-black px-4 py-3 rounded-full">
+        🎤
+      </button>
 
       <button id="send-btn"
-              class="bg-yellow-400 text-black px-8 py-3 rounded-full font-semibold">
+        class="bg-yellow-400 text-black px-8 py-3
+               rounded-full font-semibold">
         Send
       </button>
     </div>
@@ -104,7 +135,10 @@
 let chatName = "{{ chat_name }}" || "Chat 1";
 const chatWindow = document.getElementById('chat-window');
 
-function activateChat() {
+function startNewChat() {
+  const frontPage = document.getElementById('front-page');
+  if (frontPage) frontPage.style.display = 'none';
+  chatWindow.innerHTML = '';
   document.getElementById('chat-input').focus();
 }
 
@@ -112,7 +146,9 @@ function addMessage(text, sender) {
   const div = document.createElement('div');
   div.className = sender === 'user' ? 'text-right' : 'text-left';
   div.innerHTML =
-    `<div class="inline-block bg-slate-700 px-4 py-2 rounded-xl max-w-xl">${text}</div>`;
+    `<div class="inline-block bg-slate-700 px-4 py-2 rounded-xl max-w-xl">
+      ${text}
+    </div>`;
   chatWindow.appendChild(div);
   chatWindow.scrollTop = chatWindow.scrollHeight;
 }
@@ -125,6 +161,7 @@ async function clearAllHistory() {
   if (!confirm('Clear all chat history?')) return;
   await fetch('/new_chat', { method: 'POST' });
   chatWindow.innerHTML = '';
+  alert('All history cleared');
 }
 
 document.getElementById('send-btn').onclick = async () => {
