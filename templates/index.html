@@ -5,11 +5,13 @@
   <title>LegalGenie.AI</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    body { background: radial-gradient(circle at top, #0b1d33, #020617); }
+    body {
+      background: radial-gradient(circle at top, #0b1d33, #020617);
+    }
   </style>
 </head>
 
-<body class="text-white flex h-screen overflow-hidden">
+<body class="text-white flex min-h-screen">
 
 <!-- ================= LEFT SIDEBAR ================= -->
 <aside class="w-72 bg-[#06172d] p-6 flex flex-col justify-between">
@@ -23,7 +25,6 @@
     </div>
 
     <div class="flex flex-col gap-4">
-      
       <button onclick="clearChatUI()" class="bg-yellow-400 text-black py-2 rounded-lg font-semibold">Clear Chat</button>
       <button onclick="clearAllHistory()" class="bg-yellow-400 text-black py-2 rounded-lg font-semibold">Clear All History</button>
     </div>
@@ -49,23 +50,20 @@
   </div>
 
   <!-- Feature Cards -->
-  <div class="grid grid-cols-3 gap-8 mt-12 px-20">
+  <div class="grid grid-cols-3 gap-8 mt-12 px-20 mb-16">
 
-    <!-- ASK ANYTHING -->
     <div class="bg-[#0b1d33] p-8 rounded-2xl border border-slate-700 text-center cursor-pointer hover:border-yellow-400"
          onclick="activateChat()">
       <h2 class="text-yellow-400 text-2xl mb-2">Ask Anything</h2>
       <p class="text-slate-400 text-sm">IPC, CrPC, bail, contracts, family law…</p>
     </div>
 
-    <!-- PREDICTION -->
     <div onclick="window.location.href='/predict'"
          class="bg-[#0b1d33] p-8 rounded-2xl border border-slate-700 text-center cursor-pointer hover:border-yellow-400">
       <h2 class="text-yellow-400 text-2xl mb-2">Judgment Prediction</h2>
       <p class="text-slate-400 text-sm">Upload FIR/Judgment → get outcome</p>
     </div>
 
-    <!-- GENERATE -->
     <div onclick="window.location.href='/generate'"
          class="bg-[#0b1d33] p-8 rounded-2xl border border-slate-700 text-center cursor-pointer hover:border-yellow-400">
       <h2 class="text-yellow-400 text-2xl mb-2">Generate Document</h2>
@@ -75,10 +73,13 @@
   </div>
 
   <!-- ================= CHAT WINDOW ================= -->
-  <div id="chat-window" class="flex-1 px-20 py-8 overflow-y-auto space-y-4"></div>
+  <div id="chat-window"
+       class="px-20 py-6 overflow-y-auto space-y-4"
+       style="max-height: 45vh;">
+  </div>
 
   <!-- ================= INPUT BAR ================= -->
-  <div class="px-20 pb-8" id="chat-section">
+  <div class="px-20 pb-8 mt-4" id="chat-section">
     <div class="flex items-center gap-4">
 
       <select id="language" class="bg-[#0b1d33] border border-slate-700 rounded-full px-4 py-3">
@@ -99,11 +100,9 @@
 </main>
 
 <script>
-// ================= GLOBALS =================
 let chatName = "{{ chat_name }}" || "Chat 1";
 const chatWindow = document.getElementById('chat-window');
 
-// ================= UI HELPERS =================
 function activateChat() {
   document.getElementById('chat-section').scrollIntoView({ behavior: 'smooth' });
   document.getElementById('chat-input').focus();
@@ -115,67 +114,6 @@ function addMessage(text, sender) {
   div.innerHTML = `<div class="inline-block bg-slate-700 px-4 py-2 rounded-xl max-w-xl">${text}</div>`;
   chatWindow.appendChild(div);
   chatWindow.scrollTop = chatWindow.scrollHeight;
-}
-
-// ================= CHAT CONTROLS =================
-async function createChat() {
-  const res = await fetch('/new_chat', { method: 'POST' });
-  const data = await res.json();
-  chatName = data.chat_name;
-  chatWindow.innerHTML = '';
-}
-
-function clearChatUI() {
-  chatWindow.innerHTML = '';
-}
-
-async function clearAllHistory() {
-  if (!confirm('Clear all chat history?')) return;
-  await fetch('/new_chat', { method: 'POST' });
-  chatWindow.innerHTML = '';
-  alert('All history cleared');
-}
-
-// ================= SEND MESSAGE =================
-document.getElementById('send-btn').onclick = async () => {
-  const input = document.getElementById('chat-input');
-  const text = input.value.trim();
-  if (!text) return;
-
-  input.value = '';
-  addMessage(text, 'user');
-
-  const res = await fetch('/chat', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      user_input: text,
-      chat_name: chatName,
-      language: document.getElementById('language').value
-    })
-  });
-
-  const data = await res.json();
-  addMessage(data.response || 'No response', 'ai');
-
-  if (data.audio_url) new Audio(data.audio_url).play();
-};
-
-// ================= VOICE INPUT =================
-let recognition;
-if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  recognition = new SR();
-  recognition.onresult = e => {
-    document.getElementById('chat-input').value = e.results[0][0].transcript;
-  };
-}
-
-function startVoice() {
-  if (!recognition) return alert('Voice not supported');
-  const lang = document.getElementById('language').value;
-  recognition.lang = lang === 'hi' ? 'hi-IN' : lang === 'kn' ? 'kn-IN' : 'en-IN';
-  recognition.start();
 }
 </script>
 
