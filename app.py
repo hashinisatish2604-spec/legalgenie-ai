@@ -1,10 +1,11 @@
 import os
 import uuid
 import logging
+from io import BytesIO
+
 from flask import Flask, render_template, request, jsonify, send_file
 from dotenv import load_dotenv
 from gtts import gTTS
-from docx import Document
 
 # =====================================================
 # LOAD ENV VARIABLES
@@ -154,7 +155,7 @@ def predict():
             os.remove(temp_path)
 
 # =====================================================
-# DOCUMENT GENERATION (DEBUG + DOCX DOWNLOAD)
+# DOCUMENT GENERATION ✅ FIXED
 # =====================================================
 
 @app.route("/generate", methods=["GET", "POST"])
@@ -166,27 +167,23 @@ def generate():
         data = request.json
         doc_type = data.get("doc_type")
         form_data = data.get("form_data", {})
-        language = data.get("language", "en")
 
         if not doc_type or not form_data:
             return jsonify({"error": "Invalid input"}), 400
 
-        # ---------- GENERATE TEXT ----------
-        document_text = generate_document(doc_type, form_data, language)
+        # ✅ generate_document RETURNS A DOCX OBJECT
+        doc = generate_document(doc_type, form_data)
 
-        # ---------- CREATE DOCX ----------
-        doc = Document()
-        for line in document_text.split("\n"):
-            doc.add_paragraph(line)
-
-        file_name = f"{doc_type}_document.docx"
-        file_path = os.path.join(TEMP_DIR, file_name)
-        doc.save(file_path)
+        # ✅ SAVE USING BYTESIO (RENDER SAFE)
+        file_stream = BytesIO()
+        doc.save(file_stream)
+        file_stream.seek(0)
 
         return send_file(
-            file_path,
+            file_stream,
             as_attachment=True,
-            download_name=file_name
+            download_name=f"{doc_type}.docx",
+            mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         )
 
     except Exception as e:
@@ -199,4 +196,3 @@ def generate():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
-

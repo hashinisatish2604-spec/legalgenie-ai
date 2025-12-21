@@ -4,8 +4,11 @@
   <meta charset="UTF-8" />
   <title>LegalGenie.AI</title>
   <script src="https://cdn.tailwindcss.com"></script>
+
   <style>
-    body { background: radial-gradient(circle at top, #0b1d33, #020617); }
+    body {
+      background: radial-gradient(circle at top, #0b1d33, #020617);
+    }
   </style>
 </head>
 
@@ -44,23 +47,35 @@
 </aside>
 
 <!-- ================= MAIN ================= -->
-<main class="flex-1 flex flex-col">
-  <div class="flex justify-center gap-10 py-6 text-yellow-400 font-semibold">
+<main class="flex-1 flex flex-col overflow-hidden">
 
-  <a href="/" class="hover:underline">
-    Chat
-  </a>
+  <!-- ================= TOP NAVIGATION (FIXED) ================= -->
+  <div class="sticky top-0 z-50 bg-[#020617]/90 backdrop-blur
+              border-b border-slate-700">
 
-  <a href="/predict" class="hover:underline">
-    Judgment Prediction
-  </a>
+    <div class="flex justify-center gap-12 py-4
+                text-yellow-400 font-semibold text-sm">
 
-  <a href="/generate" class="hover:underline">
-    Generate Document
-  </a>
+      <a href="/"
+         class="px-5 py-2 rounded-full hover:bg-yellow-400
+                hover:text-black transition">
+        Chat
+      </a>
 
-</div>
+      <a href="/predict"
+         class="px-5 py-2 rounded-full hover:bg-yellow-400
+                hover:text-black transition">
+        Judgment Prediction
+      </a>
 
+      <a href="/generate"
+         class="px-5 py-2 rounded-full hover:bg-yellow-400
+                hover:text-black transition">
+        Generate Document
+      </a>
+
+    </div>
+  </div>
 
   <!-- ================= FRONT PAGE ================= -->
   <div id="front-page">
@@ -102,12 +117,11 @@
 
       </div>
     </div>
-
   </div>
 
   <!-- ================= CHAT WINDOW ================= -->
   <div id="chat-window"
-       class="flex-1 px-20 py-6 overflow-y-auto space-y-4 mt-10
+       class="flex-1 px-20 py-6 overflow-y-auto space-y-4
               border-t border-slate-700">
   </div>
 
@@ -137,16 +151,17 @@
                rounded-full font-semibold">
         Send
       </button>
+
     </div>
   </div>
 
 </main>
 
+<!-- ================= SCRIPT ================= -->
 <script>
 let chatName = "{{ chat_name }}" || "Chat 1";
 const chatWindow = document.getElementById('chat-window');
 
-/* ================= AUDIO FIX (NEW) ================= */
 let currentAudio = null;
 function playAudio(url) {
   if (currentAudio) {
@@ -157,7 +172,6 @@ function playAudio(url) {
   currentAudio.play();
 }
 
-/* ================= CHAT ================= */
 function startNewChat() {
   const frontPage = document.getElementById('front-page');
   if (frontPage) frontPage.style.display = 'none';
@@ -218,7 +232,6 @@ document.getElementById('send-btn').onclick = async () => {
   }
 };
 
-/* ================= VOICE INPUT ================= */
 let recognition;
 if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;

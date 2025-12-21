@@ -1,6 +1,7 @@
 from docx import Document
 from docx.shared import Pt
 from docx.enum.text import WD_ALIGN_PARAGRAPH
+from io import BytesIO
 
 
 def add_heading(doc, text):
@@ -22,7 +23,7 @@ def safe(d, key):
     return d.get(key) or "________"
 
 
-def generate_document(doc_type, d, language="en"):
+def generate_document(doc_type, d):
     doc = Document()
 
     # ================= BAIL APPLICATION =================
@@ -35,8 +36,8 @@ def generate_document(doc_type, d, language="en"):
         add_para(doc, "To,")
         add_para(doc, "The Hon'ble Judge,")
         add_para(doc, safe(d, "court_name"))
-        add_para(doc, "")
 
+        add_para(doc, "")
         add_para(
             doc,
             f"Subject: Bail Application for {safe(d,'applicant_name')} "
@@ -56,16 +57,11 @@ def generate_document(doc_type, d, language="en"):
         add_para(doc, safe(d, "reason_for_bail"))
 
         add_para(doc, "")
-        add_para(doc, "Hence, it is prayed that bail may be granted.")
-
-        add_para(doc, "")
         add_para(doc, "Yours faithfully,")
         add_para(doc, safe(d, "applicant_name"), bold=True)
 
-        return doc
-
     # ================= FIR DRAFT =================
-    if doc_type == "FIR Draft":
+    elif doc_type == "FIR Draft":
         add_heading(doc, "FIRST INFORMATION REPORT")
 
         add_para(doc, f"Police Station: {safe(d,'police_station')}", bold=True)
@@ -75,10 +71,6 @@ def generate_document(doc_type, d, language="en"):
         add_para(doc, f"Place of Incident: {safe(d,'incident_place')}")
 
         add_para(doc, "")
-        add_para(doc, f"Complainant Name: {safe(d,'complainant_name')}", bold=True)
-        add_para(doc, safe(d, "complainant_address"))
-
-        add_para(doc, "")
         add_para(doc, "Facts of the Case:", bold=True)
         add_para(doc, safe(d, "incident_details"))
 
@@ -86,10 +78,8 @@ def generate_document(doc_type, d, language="en"):
         add_para(doc, "Signature of Complainant")
         add_para(doc, safe(d, "complainant_name"), bold=True)
 
-        return doc
-
     # ================= RENT AGREEMENT =================
-    if doc_type == "Rent Agreement":
+    elif doc_type == "Rent Agreement":
         add_heading(doc, "RENT AGREEMENT")
 
         add_para(
@@ -105,16 +95,13 @@ def generate_document(doc_type, d, language="en"):
         add_para(doc, "")
         add_para(doc, f"Monthly Rent: ₹{safe(d,'rent_amount')}")
         add_para(doc, f"Security Deposit: ₹{safe(d,'security_deposit')}")
-        add_para(doc, f"Agreement Period: {safe(d,'start_date')} to {safe(d,'end_date')}")
 
         add_para(doc, "")
         add_para(doc, "Owner Signature: __________")
         add_para(doc, "Tenant Signature: __________")
 
-        return doc
-
     # ================= WILL =================
-    if doc_type == "Will":
+    elif doc_type == "Will":
         add_heading(doc, "LAST WILL AND TESTAMENT")
 
         add_para(
@@ -128,13 +115,10 @@ def generate_document(doc_type, d, language="en"):
         add_para(doc, safe(d, "beneficiary_details"))
 
         add_para(doc, "")
-        add_para(doc, f"Date: {safe(d,'date')}")
         add_para(doc, "Signature of Testator")
 
-        return doc
-
     # ================= POWER OF ATTORNEY =================
-    if doc_type == "Power of Attorney":
+    elif doc_type == "Power of Attorney":
         add_heading(doc, "POWER OF ATTORNEY")
 
         add_para(
@@ -148,15 +132,11 @@ def generate_document(doc_type, d, language="en"):
         add_para(doc, safe(d, "powers_granted"))
 
         add_para(doc, "")
-        add_para(doc, f"Date: {safe(d,'date')}")
         add_para(doc, "Signature of Principal")
 
-        return doc
-
     # ================= CUSTOM =================
-    if doc_type == "Custom":
+    elif doc_type == "Custom":
         add_heading(doc, safe(d, "custom_title"))
         add_para(doc, safe(d, "custom_text"))
-        return doc
 
     return doc
