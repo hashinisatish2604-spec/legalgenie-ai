@@ -14,6 +14,31 @@
 
 <body class="text-white flex h-screen overflow-hidden">
 
+<!-- ================= LEGAL DISCLAIMER (NEW) ================= -->
+<div id="disclaimerModal"
+     style="display:none; position:fixed; inset:0;
+            background:rgba(0,0,0,.7); z-index:9999;">
+  <div style="background:#020617;
+              max-width:500px;
+              margin:15% auto;
+              padding:20px;
+              border-radius:10px;
+              border:1px solid #334155;">
+    <h3 class="text-yellow-400 text-lg mb-2">Legal Disclaimer</h3>
+    <p class="text-sm text-slate-300">
+      LegalGenie.AI provides AI-generated legal assistance for
+      informational purposes only. It does not constitute legal
+      advice and should not be considered a substitute for advice
+      from a licensed advocate.
+    </p>
+    <button onclick="acceptDisclaimer()"
+      class="mt-4 bg-yellow-400 text-black px-4 py-2 rounded-lg font-semibold">
+      I Understand
+    </button>
+  </div>
+</div>
+<!-- ========================================================== -->
+
 <!-- ================= LEFT SIDEBAR ================= -->
 <aside class="w-72 bg-[#06172d] p-6 flex flex-col justify-between">
   <div>
@@ -49,10 +74,9 @@
 <!-- ================= MAIN ================= -->
 <main class="flex-1 flex flex-col overflow-hidden">
 
-  <!-- ================= TOP NAVIGATION (FIXED) ================= -->
+  <!-- ================= TOP NAVIGATION ================= -->
   <div class="sticky top-0 z-50 bg-[#020617]/90 backdrop-blur
               border-b border-slate-700">
-
     <div class="flex justify-center gap-12 py-4
                 text-yellow-400 font-semibold text-sm">
 
@@ -79,7 +103,6 @@
 
   <!-- ================= FRONT PAGE ================= -->
   <div id="front-page">
-
     <div class="text-center mt-10">
       <h1 class="text-6xl font-bold text-yellow-400">LegalGenie.AI</h1>
       <p class="text-slate-300 mt-2">Your AI-Powered Indian Law Assistant</p>
@@ -159,6 +182,16 @@
 
 <!-- ================= SCRIPT ================= -->
 <script>
+/* 🔹 NEW: Disclaimer logic */
+if (!localStorage.getItem("disclaimerAccepted")) {
+  document.getElementById("disclaimerModal").style.display = "block";
+}
+function acceptDisclaimer() {
+  localStorage.setItem("disclaimerAccepted", "yes");
+  document.getElementById("disclaimerModal").style.display = "none";
+}
+
+/* Existing script below – UNCHANGED */
 let chatName = "{{ chat_name }}" || "Chat 1";
 const chatWindow = document.getElementById('chat-window');
 

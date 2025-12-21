@@ -37,12 +37,15 @@ input, textarea {
 textarea { min-height: 80px; }
 button {
   width: 100%;
-  margin-top: 20px;
+  margin-top: 12px;
   padding: 12px;
   background: gold;
   border: none;
   border-radius: 8px;
   font-weight: bold;
+}
+pre {
+  white-space: pre-wrap;
 }
 </style>
 </head>
@@ -65,7 +68,29 @@ button {
 
 <div id="formView" style="display:none;">
   <form id="dynamicForm"></form>
-  <button onclick="generateDoc()">Generate Document</button>
+
+  <!-- 🔹 NEW: Preview Button -->
+  <button type="button" onclick="previewDoc()">Preview Document</button>
+
+  <!-- 🔹 EXISTING: Generate DOCX -->
+  <button type="button" onclick="generateDoc()">Download DOCX</button>
+
+  <!-- 🔹 NEW: Preview Box -->
+  <div id="previewBox" style="display:none; margin-top:20px;">
+    <h3>Document Preview</h3>
+    <pre id="previewText"
+         style="background:#020617;
+                padding:15px;
+                border:1px solid #555;
+                max-height:300px;
+                overflow:auto;"></pre>
+  </div>
+
+  <!-- 🔹 NEW: Download History -->
+  <div id="historyBox" style="margin-top:20px;">
+    <h3>Recent Downloads</h3>
+    <ul id="historyList"></ul>
+  </div>
 </div>
 
 </div>
@@ -196,16 +221,16 @@ const formSchema = {
 ]
 };
 
-let currentDocType="";
+let currentDocType = "";
 
 function openForm(type){
-  currentDocType=type;
-  document.getElementById("cardView").style.display="none";
-  document.getElementById("formView").style.display="block";
-  const form=document.getElementById("dynamicForm");
-  form.innerHTML="";
+  currentDocType = type;
+  document.getElementById("cardView").style.display = "none";
+  document.getElementById("formView").style.display = "block";
+  const form = document.getElementById("dynamicForm");
+  form.innerHTML = "";
   formSchema[type].forEach(f=>{
-    form.innerHTML+=`
+    form.innerHTML += `
       <div class="form-group">
         <label>${f.label}</label>
         ${f.type==="textarea"
@@ -215,18 +240,71 @@ function openForm(type){
   });
 }
 
-function generateDoc(){
-  const data={};
-  document.querySelectorAll("[name]").forEach(e=>data[e.name]=e.value);
-  fetch("/generate",{method:"POST",headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({doc_type:currentDocType,form_data:data})})
-  .then(r=>r.blob()).then(b=>{
-    const a=document.createElement("a");
-    a.href=URL.createObjectURL(b);
-    a.download=currentDocType+".docx";
-    a.click();
+function collectData() {
+  const data = {};
+  document.querySelectorAll("[name]").forEach(e => data[e.name] = e.value);
+  return data;
+}
+
+/* 🔹 NEW: Preview */
+function previewDoc(){
+  fetch("/preview", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({
+      doc_type: currentDocType,
+      form_data: collectData()
+    })
+  })
+  .then(r => r.json())
+  .then(d => {
+    document.getElementById("previewBox").style.display = "block";
+    document.getElementById("previewText").innerText = d.preview;
   });
 }
+
+/* 🔹 EXISTING: Download */
+function generateDoc(){
+  fetch("/generate", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({
+      doc_type: currentDocType,
+      form_data: collectData()
+    })
+  })
+  .then(r => r.blob())
+  .then(b=>{
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(b);
+    a.download = currentDocType + ".docx";
+    a.click();
+    saveHistory(currentDocType);
+  });
+}
+
+/* 🔹 NEW: Download History */
+function saveHistory(type) {
+  let h = JSON.parse(localStorage.getItem("docHistory") || "[]");
+  h.unshift({type, time: new Date().toLocaleString()});
+  h = h.slice(0,5);
+  localStorage.setItem("docHistory", JSON.stringify(h));
+  renderHistory();
+}
+
+function renderHistory() {
+  const list = document.getElementById("historyList");
+  list.innerHTML = "";
+  JSON.parse(localStorage.getItem("docHistory") || "[]")
+    .forEach(i => {
+      const li = document.createElement("li");
+      li.textContent = `${i.type} — ${i.time}`;
+      list.appendChild(li);
+    });
+}
+
+renderHistory();
 </script>
+
 </body>
 </html>

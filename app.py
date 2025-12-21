@@ -155,7 +155,7 @@ def predict():
             os.remove(temp_path)
 
 # =====================================================
-# DOCUMENT GENERATION ✅ FIXED
+# DOCUMENT GENERATION ✅ FIXED (UNCHANGED)
 # =====================================================
 
 @app.route("/generate", methods=["GET", "POST"])
@@ -171,10 +171,8 @@ def generate():
         if not doc_type or not form_data:
             return jsonify({"error": "Invalid input"}), 400
 
-        # ✅ generate_document RETURNS A DOCX OBJECT
         doc = generate_document(doc_type, form_data)
 
-        # ✅ SAVE USING BYTESIO (RENDER SAFE)
         file_stream = BytesIO()
         doc.save(file_stream)
         file_stream.seek(0)
@@ -188,6 +186,32 @@ def generate():
 
     except Exception as e:
         app.logger.error("🔥 DOCUMENT GENERATION ERROR", exc_info=True)
+        return jsonify({"error": str(e)}), 500
+
+# =====================================================
+# DOCUMENT PREVIEW (NEW – FEATURE 1)
+# =====================================================
+
+@app.route("/preview", methods=["POST"])
+def preview():
+    try:
+        data = request.json
+        doc_type = data.get("doc_type")
+        form_data = data.get("form_data", {})
+
+        if not doc_type:
+            return jsonify({"error": "Invalid input"}), 400
+
+        doc = generate_document(doc_type, form_data)
+
+        preview_text = "\n".join(
+            p.text for p in doc.paragraphs if p.text.strip()
+        )
+
+        return jsonify({"preview": preview_text})
+
+    except Exception as e:
+        app.logger.error("🔥 DOCUMENT PREVIEW ERROR", exc_info=True)
         return jsonify({"error": str(e)}), 500
 
 # =====================================================
