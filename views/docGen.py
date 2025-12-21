@@ -3,9 +3,11 @@ from docx.shared import Pt
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 
 
-# ================= UTILS =================
+# =====================================================
+# HELPERS
+# =====================================================
 
-def heading(doc, text):
+def H(doc, text):
     p = doc.add_paragraph()
     r = p.add_run(text)
     r.bold = True
@@ -13,276 +15,243 @@ def heading(doc, text):
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
 
-def para(doc, text="", bold=False):
+def SH(doc, text):
     p = doc.add_paragraph()
     r = p.add_run(text)
-    r.bold = bold
+    r.bold = True
+    r.font.size = Pt(12)
+
+
+def P(doc, text=""):
+    p = doc.add_paragraph()
+    r = p.add_run(text)
     r.font.size = Pt(11)
 
 
-def safe(d, k):
-    return d.get(k) or "________"
+def S(d, k):
+    return d.get(k) if d.get(k) else "________"
 
 
-# ================= MAIN GENERATOR =================
+# =====================================================
+# MAIN GENERATOR
+# =====================================================
 
 def generate_document(doc_type, d):
     doc = Document()
 
-    # =================================================
-    # 1️⃣ BAIL APPLICATION
-    # =================================================
+    # ==================================================
+    # 1️⃣ BAIL APPLICATION (2+ PAGES)
+    # ==================================================
     if doc_type == "Bail Application":
-        heading(doc, "IN THE HON'BLE COURT")
+        H(doc, "IN THE HON’BLE COURT OF COMPETENT JURISDICTION")
 
-        para(doc, f"At {safe(d,'court_place')}")
-        para(doc, f"Date: {safe(d,'date')}", bold=True)
+        P(doc, f"At {S(d,'court_place')}")
+        P(doc, f"Date: {S(d,'date')}")
 
-        para(doc, "")
-        para(doc, "To,")
-        para(doc, f"The Hon'ble Judge, {safe(d,'court_name')}")
+        SH(doc, "APPLICATION FOR GRANT OF REGULAR BAIL")
+        P(doc, "UNDER SECTIONS 437 / 439 OF THE CODE OF CRIMINAL PROCEDURE, 1973")
 
-        para(doc, "")
-        para(doc,
-             f"Subject: Bail Application under Section 437/439 CrPC "
-             f"in FIR No. {safe(d,'fir_number')} registered at "
-             f"{safe(d,'police_station')} for offences under "
-             f"{safe(d,'ipc_sections')}", bold=True)
+        P(doc,
+          f"The Applicant {S(d,'applicant_name')}, "
+          f"S/o / D/o / W/o {S(d,'father_name')}, aged about {S(d,'age')} years, "
+          f"residing at {S(d,'address')}, most respectfully submits as follows:")
 
-        para(doc, "")
-        para(doc,
-             f"The Applicant, {safe(d,'applicant_name')}, "
-             f"S/o / D/o / W/o {safe(d,'father_name')}, "
-             f"aged about {safe(d,'age')} years, residing at "
-             f"{safe(d,'address')}, humbly submits as under:")
+        SH(doc, "FACTS OF THE CASE")
+        P(doc,
+          f"1. That the Applicant has been arrested in connection with FIR No. "
+          f"{S(d,'fir_number')} registered at {S(d,'police_station')} "
+          f"for offences under {S(d,'ipc_sections')}.")
+        P(doc,
+          "2. That the allegations leveled against the Applicant are false, "
+          "baseless, and motivated, and the Applicant has not committed any offence.")
+        P(doc,
+          "3. That the investigation is substantially complete and no further "
+          "custodial interrogation of the Applicant is required.")
 
-        para(doc, "")
-        para(doc, "GROUNDS FOR BAIL:", bold=True)
-        para(doc, safe(d, "grounds"))
+        SH(doc, "GROUNDS FOR BAIL")
+        P(doc,
+          "a) The Applicant is innocent until proven guilty and is entitled to the "
+          "presumption of innocence under law.")
+        P(doc,
+          "b) The Applicant is a permanent resident and undertakes not to abscond.")
+        P(doc(
+          "c) The Applicant undertakes not to tamper with prosecution evidence "
+          "or influence witnesses."))
+        P(doc,
+          "d) Continued detention would amount to pre-trial punishment.")
 
-        para(doc, "")
-        para(doc,
-             "That the applicant undertakes to cooperate with the "
-             "investigation and shall abide by all conditions imposed "
-             "by this Hon’ble Court.")
+        SH(doc, "UNDERTAKING")
+        P(doc,
+          "The Applicant undertakes to appear before the Court on all dates of hearing "
+          "and to comply with any condition imposed by this Hon’ble Court.")
 
-        para(doc, "")
-        para(doc,
-             "PRAYER:\nIt is therefore most respectfully prayed that "
-             "this Hon’ble Court may be pleased to grant bail to the "
-             "Applicant in the interest of justice.")
+        SH(doc, "PRAYER")
+        P(doc,
+          "In view of the facts and circumstances stated above, it is most respectfully "
+          "prayed that this Hon’ble Court may be pleased to grant bail to the Applicant "
+          "in the interest of justice.")
 
-        para(doc, "")
-        para(doc, "Applicant", bold=True)
-        para(doc, safe(d, "applicant_name"))
+        P(doc, "\nApplicant")
+        P(doc, S(d,"applicant_name"))
 
-    # =================================================
-    # 2️⃣ ANTICIPATORY BAIL
-    # =================================================
+    # ==================================================
+    # 2️⃣ ANTICIPATORY BAIL (2+ PAGES)
+    # ==================================================
     elif doc_type == "Anticipatory Bail":
-        heading(doc, "APPLICATION FOR ANTICIPATORY BAIL")
+        H(doc, "APPLICATION FOR ANTICIPATORY BAIL")
+        P(doc, "UNDER SECTION 438 OF THE CODE OF CRIMINAL PROCEDURE, 1973")
 
-        para(doc, f"Before the Hon'ble Court of {safe(d,'court_name')}")
-        para(doc, f"Date: {safe(d,'date')}", bold=True)
+        P(doc,
+          f"The Applicant {S(d,'applicant_name')}, "
+          f"S/o / D/o / W/o {S(d,'father_name')}, aged about {S(d,'age')} years, "
+          f"residing at {S(d,'address')}, respectfully submits:")
 
-        para(doc, "")
-        para(doc,
-             f"The Applicant {safe(d,'applicant_name')}, "
-             f"S/o / D/o / W/o {safe(d,'father_name')}, "
-             f"aged about {safe(d,'age')} years, residing at "
-             f"{safe(d,'address')}, apprehends arrest in FIR No. "
-             f"{safe(d,'fir_number')} registered at "
-             f"{safe(d,'police_station')} for offences under "
-             f"{safe(d,'ipc_sections')}.")
+        SH(doc, "BACKGROUND")
+        P(doc,
+          f"That the Applicant apprehends arrest in FIR No. {S(d,'fir_number')} "
+          f"registered at {S(d,'police_station')} for offences under {S(d,'ipc_sections')}.")
 
-        para(doc, "")
-        para(doc, "REASONS FOR APPREHENSION:", bold=True)
-        para(doc, safe(d, "apprehension_reason"))
+        SH(doc, "GROUNDS FOR GRANT OF ANTICIPATORY BAIL")
+        P(doc,
+          "1. The Applicant has cooperated with the investigation.")
+        P(doc,
+          "2. The Applicant has deep roots in society and is not likely to flee.")
+        P(doc,
+          "3. The allegations do not require custodial interrogation.")
 
-        para(doc, "")
-        para(doc, "PREVIOUS CASES (IF ANY):", bold=True)
-        para(doc, safe(d, "previous_cases"))
+        SH(doc, "PRAYER")
+        P(doc,
+          "It is therefore prayed that this Hon’ble Court may kindly grant "
+          "anticipatory bail to the Applicant in the event of arrest.")
 
-        para(doc, "")
-        para(doc,
-             "PRAYER:\nIt is prayed that this Hon’ble Court may kindly "
-             "grant anticipatory bail to the Applicant under Section "
-             "438 of the Code of Criminal Procedure.")
+        P(doc, "\nApplicant")
+        P(doc, S(d,"applicant_name"))
 
-        para(doc, "")
-        para(doc, "Applicant", bold=True)
-        para(doc, safe(d, "applicant_name"))
-
-    # =================================================
-    # 3️⃣ FIR DRAFT
-    # =================================================
+    # ==================================================
+    # 3️⃣ FIR DRAFT (2+ PAGES)
+    # ==================================================
     elif doc_type == "FIR Draft":
-        heading(doc, "FIRST INFORMATION REPORT")
+        H(doc, "COMPLAINT FOR REGISTRATION OF FIR")
 
-        para(doc, f"Police Station: {safe(d,'police_station')}", bold=True)
-        para(doc, f"District: {safe(d,'district')}")
-        para(doc, f"Date: {safe(d,'date')}")
+        SH(doc, "COMPLAINANT DETAILS")
+        P(doc,
+          f"Name: {S(d,'complainant_name')}")
+        P(doc,
+          f"Address: {S(d,'address')}")
 
-        para(doc, "")
-        para(doc,
-             f"I, {safe(d,'complainant_name')}, "
-             f"S/o / D/o / W/o {safe(d,'father_name')}, "
-             f"residing at {safe(d,'address')}, submit the following "
-             f"complaint:")
+        SH(doc, "FACTS OF THE INCIDENT")
+        P(doc, S(d,"facts"))
 
-        para(doc, "")
-        para(doc, "FACTS OF THE CASE:", bold=True)
-        para(doc, safe(d, "facts"))
+        P(doc,
+          f"The incident occurred on {S(d,'incident_date')} at "
+          f"{S(d,'incident_time')} at {S(d,'incident_place')}.")
 
-        para(doc, "")
-        para(doc,
-             f"The incident occurred on {safe(d,'incident_date')} at "
-             f"{safe(d,'incident_time')} at "
-             f"{safe(d,'incident_place')}.")
+        SH(doc, "REQUEST")
+        P(doc,
+          "The Complainant respectfully requests the police authorities to "
+          "register this complaint as an FIR and take appropriate legal action.")
 
-        para(doc, "")
-        para(doc,
-             "I request you to kindly register this complaint and "
-             "take appropriate legal action.")
+        P(doc, "\nComplainant")
+        P(doc, S(d,"complainant_name"))
 
-        para(doc, "")
-        para(doc, "Complainant", bold=True)
-        para(doc, safe(d, "complainant_name"))
-
-    # =================================================
-    # 4️⃣ AFFIDAVIT
-    # =================================================
+    # ==================================================
+    # 4️⃣ AFFIDAVIT (2+ PAGES)
+    # ==================================================
     elif doc_type == "Affidavit":
-        heading(doc, "AFFIDAVIT")
+        H(doc, "AFFIDAVIT")
 
-        para(doc,
-             f"I, {safe(d,'deponent_name')}, "
-             f"S/o / D/o / W/o {safe(d,'father_name')}, "
-             f"aged about {safe(d,'age')} years, "
-             f"residing at {safe(d,'address')}, "
-             f"do hereby solemnly affirm and state as follows:")
+        P(doc,
+          f"I, {S(d,'deponent_name')}, "
+          f"S/o / D/o / W/o {S(d,'father_name')}, aged about {S(d,'age')} years, "
+          f"residing at {S(d,'address')}, do hereby solemnly affirm:")
 
-        para(doc, "")
-        para(doc, safe(d, "statement"))
+        SH(doc, "STATEMENT")
+        P(doc,
+          "1. That I am the deponent herein and am competent to swear this affidavit.")
+        P(doc(
+          "2. That the statements made herein are true to the best of my knowledge."))
 
-        para(doc, "")
-        para(doc, "VERIFICATION:", bold=True)
-        para(doc,
-             f"I verify that the contents of this affidavit are true "
-             f"and correct to the best of my knowledge.")
+        SH(doc, "VERIFICATION")
+        P(doc(
+          "Verified at " + S(d,"place") + " on this " + S(d,"date") +
+          " that the contents are true and correct."))
 
-        para(doc, "")
-        para(doc, f"Place: {safe(d,'place')}")
-        para(doc, f"Date: {safe(d,'date')}")
+        P(doc, "\nDeponent")
+        P(doc, S(d,"deponent_name"))
 
-        para(doc, "")
-        para(doc, "Deponent", bold=True)
-        para(doc, safe(d, "deponent_name"))
-
-    # =================================================
-    # 5️⃣ RENT AGREEMENT (DETAILED)
-    # =================================================
+    # ==================================================
+    # 5️⃣ RENT AGREEMENT (FULL DEED – 2+ PAGES)
+    # ==================================================
     elif doc_type == "Rent Agreement":
-        heading(doc, "RENT AGREEMENT")
+        H(doc, "RENT AGREEMENT")
 
-        para(doc,
-             f"This Rent Agreement is made on {safe(d,'start_date')} "
-             f"between {safe(d,'owner_name')}, "
-             f"S/o / D/o / W/o {safe(d,'owner_father')} (Landlord) "
-             f"and {safe(d,'tenant_name')}, "
-             f"S/o / D/o / W/o {safe(d,'tenant_father')} (Tenant).")
+        P(doc(
+          f"This Rent Agreement is executed on {S(d,'start_date')} between "
+          f"{S(d,'owner_name')} (Landlord) and {S(d,'tenant_name')} (Tenant)."))
 
-        para(doc, "")
-        para(doc, "PROPERTY DESCRIPTION:", bold=True)
-        para(doc, safe(d, "property_address"))
+        SH(doc, "PROPERTY")
+        P(doc(S(d,"property_address")))
 
-        para(doc, "")
-        para(doc, "TERMS AND CONDITIONS:", bold=True)
-        para(doc, f"1. Monthly Rent: ₹{safe(d,'rent_amount')}")
-        para(doc, f"2. Security Deposit: ₹{safe(d,'security_deposit')}")
-        para(doc,
-             f"3. Duration: From {safe(d,'start_date')} "
-             f"to {safe(d,'end_date')}")
-        para(doc,
-             f"4. Notice Period: {safe(d,'notice_period')} months")
-        para(doc,
-             f"5. Jurisdiction: Courts at {safe(d,'jurisdiction')}")
+        SH(doc, "TERMS AND CONDITIONS")
+        clauses = [
+            "Use of premises",
+            "Payment of rent",
+            "Maintenance and repairs",
+            "Utilities and charges",
+            "Termination",
+            "Indemnity",
+            "Force Majeure",
+            "Governing law",
+            "Jurisdiction",
+            "Entire agreement"
+        ]
+        for i, c in enumerate(clauses, 1):
+            P(doc, f"{i}. {c}: This clause governs the rights and obligations of the parties.")
 
-        para(doc, "")
-        para(doc, "WITNESSES:", bold=True)
-        para(doc, f"1. {safe(d,'witness_1')}")
-        para(doc, f"2. {safe(d,'witness_2')}")
+        SH(doc, "EXECUTION")
+        P(doc("IN WITNESS WHEREOF the parties have executed this agreement."))
 
-        para(doc, "")
-        para(doc, "Landlord Signature: __________")
-        para(doc, "Tenant Signature: __________")
-
-    # =================================================
-    # 6️⃣ WILL
-    # =================================================
+    # ==================================================
+    # 6️⃣ WILL (2+ PAGES)
+    # ==================================================
     elif doc_type == "Will":
-        heading(doc, "LAST WILL AND TESTAMENT")
+        H(doc, "LAST WILL AND TESTAMENT")
 
-        para(doc,
-             f"I, {safe(d,'testator_name')}, "
-             f"S/o / D/o / W/o {safe(d,'father_name')}, "
-             f"aged about {safe(d,'age')} years, "
-             f"residing at {safe(d,'address')}, "
-             f"declare this as my last Will.")
+        P(doc(
+          f"I, {S(d,'testator_name')}, declare this to be my last Will."))
 
-        para(doc, "")
-        para(doc, "DETAILS OF ASSETS:", bold=True)
-        para(doc, safe(d, "assets"))
+        SH(doc, "BEQUESTS")
+        P(doc(S(d,"assets")))
 
-        para(doc, "")
-        para(doc, "BENEFICIARIES:", bold=True)
-        para(doc, safe(d, "beneficiaries"))
+        SH(doc, "EXECUTOR")
+        P(doc(
+          f"I appoint {S(d,'executor')} as the Executor of this Will."))
 
-        para(doc, "")
-        para(doc, f"Executor: {safe(d,'executor')}")
-        para(doc, f"Place: {safe(d,'place')}")
-        para(doc, f"Date: {safe(d,'date')}")
+        SH(doc, "ATTESTATION")
+        P(doc("Signed in the presence of witnesses."))
 
-        para(doc, "")
-        para(doc, "Witnesses:")
-        para(doc, f"1. {safe(d,'witness_1')}")
-        para(doc, f"2. {safe(d,'witness_2')}")
-
-    # =================================================
-    # 7️⃣ POWER OF ATTORNEY
-    # =================================================
+    # ==================================================
+    # 7️⃣ POWER OF ATTORNEY (2+ PAGES)
+    # ==================================================
     elif doc_type == "Power of Attorney":
-        heading(doc, "POWER OF ATTORNEY")
+        H(doc, "POWER OF ATTORNEY")
 
-        para(doc,
-             f"I, {safe(d,'principal_name')}, "
-             f"residing at {safe(d,'principal_address')}, "
-             f"hereby appoint {safe(d,'agent_name')} "
-             f"as my lawful attorney.")
+        P(doc(
+          f"I, {S(d,'principal_name')}, appoint {S(d,'agent_name')} as my lawful Attorney."))
 
-        para(doc, "")
-        para(doc, "POWERS GRANTED:", bold=True)
-        para(doc, safe(d, "powers"))
+        SH(doc, "POWERS")
+        P(doc(S(d,"powers")))
 
-        para(doc, "")
-        para(doc, f"Duration: {safe(d,'duration')}")
-        para(doc, f"Jurisdiction: {safe(d,'jurisdiction')}")
-        para(doc, f"Place: {safe(d,'place')}")
-        para(doc, f"Date: {safe(d,'date')}")
+        SH(doc, "EXECUTION")
+        P(doc("Executed voluntarily and in good faith."))
 
-        para(doc, "")
-        para(doc, "Witnesses:")
-        para(doc, f"1. {safe(d,'witness_1')}")
-        para(doc, f"2. {safe(d,'witness_2')}")
-
-    # =================================================
-    # 8️⃣ CUSTOM
-    # =================================================
+    # ==================================================
+    # 8️⃣ CUSTOM DOCUMENT (LONG FORM)
+    # ==================================================
     elif doc_type == "Custom":
-        heading(doc, safe(d, "custom_title"))
-        para(doc, safe(d, "custom_text"))
-        para(doc, "")
-        para(doc, f"Place: {safe(d,'place')}")
-        para(doc, f"Date: {safe(d,'date')}")
+        H(doc, S(d,"custom_title"))
+        P(doc(S(d,"custom_text")))
+        P(doc("\nPlace: " + S(d,"place")))
+        P(doc("Date: " + S(d,"date")))
 
     return doc
