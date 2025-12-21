@@ -51,8 +51,34 @@ predictForm.onsubmit = async e => {
 
   const data = await res.json();
 
-  output.textContent =
-    data.document_type + "\n\n" + data.analysis;
+  // ===== EXISTING OUTPUT (UNCHANGED) =====
+  let result =
+    (data.document_type || "Document Analysis") +
+    "\n\n" +
+    (data.analysis || "No analysis available");
+
+  // ===== ADDITIONAL PREDICTION PARTS (SAFE) =====
+  if (data.prediction) {
+    result += "\n\n📌 Prediction:\n" + data.prediction;
+  }
+
+  if (data.confidence) {
+    result += "\n\n📊 Confidence:\n" + data.confidence;
+  }
+
+  if (data.risk_level) {
+    result += "\n\n⚠️ Risk Level:\n" + data.risk_level;
+  }
+
+  if (data.sections) {
+    result += "\n\n📚 Relevant Sections:\n" + data.sections;
+  }
+
+  if (data.explanation) {
+    result += "\n\n🧠 Explanation:\n" + data.explanation;
+  }
+
+  output.textContent = result;
 };
 </script>
 

@@ -287,9 +287,11 @@ function openForm(type) {
 
         div.innerHTML = `
             <label>${f.label}</label>
-            ${f.type === "textarea"
-                ? <textarea name="${f.name}"></textarea>
-                : <input type="${f.type}" name="${f.name}">}
+            ${
+              f.type === "textarea"
+                ? `<textarea name="${f.name}"></textarea>`
+                : `<input type="${f.type}" name="${f.name}">`
+            }
         `;
         form.appendChild(div);
     });

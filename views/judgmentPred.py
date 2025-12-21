@@ -38,13 +38,16 @@ You are an expert Indian legal analyst.
 
 {LANGUAGE_MAP.get(language)}
 
-Analyze the following legal document and provide:
+Analyze the following legal document and provide the response in clearly labeled sections:
 
-1. Document Type
-2. Legal Validity (Valid / Possibly Invalid)
-3. Key Legal Issues
-4. Missing Clauses (if any)
-5. Suggestions for Improvement
+Document Type:
+Legal Validity:
+Key Legal Issues:
+Missing Clauses:
+Suggestions for Improvement:
+Final Prediction (Favorable / Unfavorable / Uncertain):
+Risk Level (Low / Medium / High):
+Confidence Level (0–100%):
 
 Document:
 {text}
@@ -55,7 +58,22 @@ Document:
         system_prompt="You are a legal judgment prediction assistant."
     )
 
+    # -------- SAFE PARSING (NO BREAKAGE) --------
+    def extract_section(label):
+        try:
+            return analysis.split(label + ":")[1].split("\n")[0].strip()
+        except Exception:
+            return ""
+
     return {
-        "document_type": "Predicted Legal Document",
-        "analysis": analysis
+        # EXISTING (DO NOT CHANGE)
+        "document_type": extract_section("Document Type") or "Predicted Legal Document",
+        "analysis": analysis,
+
+        # NEW (OPTIONAL, SAFE)
+        "prediction": extract_section("Final Prediction"),
+        "risk_level": extract_section("Risk Level"),
+        "confidence": extract_section("Confidence Level"),
+        "issues": extract_section("Key Legal Issues"),
+        "suggestions": extract_section("Suggestions for Improvement")
     }
